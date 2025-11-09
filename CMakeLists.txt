@@ -22,6 +22,8 @@ add_library(
     src/libc/string.s
     src/ps1/cache.s
     src/vendor/printf.c
+    src/controller.c
+    src/gpu.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)
 
