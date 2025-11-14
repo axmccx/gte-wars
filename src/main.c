@@ -56,13 +56,12 @@ int main(int argc, const char **argv) {
 		ptr[1] = gp0_xy(bufferX, bufferY);
 		ptr[2] = gp0_xy(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		// TODO make the square smaller, and different color
-		// TODO draw something more interesting than a square
-
 		ptr = allocatePacket(chain, 3);
 		ptr[0] = gp0_rgb(255, 0, 192) | gp0_rectangle(false, false, false);
 		ptr[1] = gp0_xy(x, y);
-		ptr[2] = gp0_xy(8, 8);
+		ptr[2] = gp0_xy(16, 16);
+
+		*(chain->nextPacket) = gp0_endTag(0);
 
 		const uint16_t buttons = readControllerButtons(0);
 

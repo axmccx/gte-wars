@@ -25,7 +25,7 @@ void initSerialIO(int baud) {
 	SIO_MODE(1) = 0
 		| SIO_MODE_BAUD_DIV1
 		| SIO_MODE_DATA_8
-		| SIO_MODE_STOP_1;
+		| SIO_MODE_STOP_2;  //SIO_MODE_STOP_1 for pcsx-redux, SIO_MODE_STOP_2 for nops on a real PS1 over serial
 	SIO_BAUD(1) = F_CPU / baud;
 	SIO_CTRL(1) = 0
 		| SIO_CTRL_TX_ENABLE
