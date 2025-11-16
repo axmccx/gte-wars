@@ -1,7 +1,7 @@
 # TODO
 
 [x] Figure out how to run over serial
-[ ] Write a blender obj conversion script
+[x] Write a blender obj conversion script
 
 [ ] Draw something more interesting than a square
 [ ] Support for analog stick
