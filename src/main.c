@@ -4,9 +4,12 @@
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "controller.h"
+#include "model.h"
 
 #define SCREEN_WIDTH     320
 #define SCREEN_HEIGHT    240
+
+extern const uint8_t icoSphere[];
 
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
@@ -27,6 +30,8 @@ int main(int argc, const char **argv) {
 
 	int x = 0;
 	int y = 0;
+
+	volatile ObjModel icoSphereModel = loadObjModel(icoSphere);
 
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;

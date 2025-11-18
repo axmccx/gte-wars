@@ -2,6 +2,9 @@
 
 [x] Figure out how to run over serial
 [x] Write a blender obj conversion script
+[ ] Implement binary object loading
+[ ] Implement backface culling
+[ ] Build World State
 
 [ ] Draw something more interesting than a square
 [ ] Support for analog stick

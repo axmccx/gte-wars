@@ -24,6 +24,7 @@ add_library(
     src/vendor/printf.c
     src/controller.c
     src/gpu.c
+    src/model.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)
 
@@ -35,3 +36,8 @@ target_include_directories(
 link_libraries(common)
 
 addPS1Executable(main src/main.c)
+covertObj(
+    objects/ico-sphere.obj
+    objects/ico-sphere.dat
+)
+addBinaryFile(main icoSphere "${PROJECT_BINARY_DIR}/objects/ico-sphere.dat")

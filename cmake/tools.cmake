@@ -118,3 +118,17 @@ pass -DPSXAVENC_PATH=... to CMake to specify its location manually.")
 		VERBATIM
 	)
 endfunction()
+
+
+function(covertObj input)
+	add_custom_command(
+			OUTPUT  ${ARGN}
+			DEPENDS "${PROJECT_SOURCE_DIR}/${input}"
+			COMMAND
+			"${Python3_EXECUTABLE}"
+			"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tools/convert_obj.py"
+			"${PROJECT_SOURCE_DIR}/${input}"
+			${ARGN}
+			VERBATIM
+	)
+endfunction()
