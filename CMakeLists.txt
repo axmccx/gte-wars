@@ -23,7 +23,9 @@ add_library(
     src/ps1/cache.s
     src/vendor/printf.c
     src/controller.c
-    src/gpu.c
+    src/ps1/gpu.c
+    src/ps1/gte.c
+    src/ps1/trig.c
     src/model.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)

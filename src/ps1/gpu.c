@@ -106,11 +106,29 @@ void sendVRAMData(
 		| DMA_CHCR_ENABLE;
 }
 
-uint32_t *allocatePacket(DMAChain *chain, int numCommands) {
+void clearOrderingTable(uint32_t *table, int numEntries) {
+	DMA_MADR(DMA_OTC) = (uint32_t) &table[numEntries - 1];
+	DMA_BCR (DMA_OTC) = numEntries;
+	DMA_CHCR(DMA_OTC) = 0
+		| DMA_CHCR_READ
+		| DMA_CHCR_REVERSE
+		| DMA_CHCR_MODE_BURST
+		| DMA_CHCR_ENABLE
+		| DMA_CHCR_TRIGGER;
+
+	while (DMA_CHCR(DMA_OTC) & DMA_CHCR_ENABLE)
+		__asm__ volatile("");
+}
+
+uint32_t *allocatePacket(DMAChain *chain, int zIndex, int numCommands) {
 	uint32_t *ptr      = chain->nextPacket;
 	chain->nextPacket += numCommands + 1;
 
-	*ptr = gp0_tag(numCommands, chain->nextPacket);
+	assert((zIndex >= 0) && (zIndex < ORDERING_TABLE_SIZE));
+
+	*ptr = gp0_tag(numCommands, (void *) chain->orderingTable[zIndex]);
+	chain->orderingTable[zIndex] = gp0_tag(0, ptr);
+
 	assert(chain->nextPacket < &(chain->data)[CHAIN_BUFFER_SIZE]);
 
 	return &ptr[1];

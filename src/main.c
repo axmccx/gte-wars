@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
-#include "gpu.h"
+#include "ps1/gpu.h"
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "controller.h"
@@ -23,7 +23,11 @@ int main(int argc, const char **argv) {
 		setupGPU(GP1_MODE_NTSC, SCREEN_WIDTH, SCREEN_HEIGHT);
 	}
 
-	DMA_DPCR |= DMA_DPCR_CH_ENABLE(DMA_GPU);
+	setupGTE(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	DMA_DPCR |= 0
+		| DMA_DPCR_CH_ENABLE(DMA_GPU)
+		| DMA_DPCR_CH_ENABLE(DMA_OTC);
 
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 	GPU_GP1 = gp1_dispBlank(false);
@@ -31,10 +35,13 @@ int main(int argc, const char **argv) {
 	int x = 0;
 	int y = 0;
 
+	uint32_t colors[6] = {0x0000ff, 0x0000ff, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00};
+
 	volatile ObjModel icoSphereModel = loadObjModel(icoSphere);
 
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
+	int frameCounter = 0;
 
 	for (;;) {
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -43,11 +50,78 @@ int main(int argc, const char **argv) {
 		DMAChain *chain = &dmaChains[usingSecondFrame];
 		usingSecondFrame = !usingSecondFrame;
 
+		uint32_t *ptr;
+
 		GPU_GP1 = gp1_fbOffset(bufferX, bufferY);
 
+		clearOrderingTable(chain->orderingTable, ORDERING_TABLE_SIZE);
 		chain->nextPacket = chain->data;
 
-		uint32_t* ptr = allocatePacket(chain, 4);
+		gte_setControlReg(GTE_TRX, x << 4);
+		gte_setControlReg(GTE_TRY, y << 4);
+		gte_setControlReg(GTE_TRZ,512);
+		gte_setRotationMatrix(
+			ONE,   0,   0,
+			  0, ONE,   0,
+			  0,   0, ONE
+		);
+
+		rotateCurrentMatrix(0, frameCounter * 6, 0);
+		frameCounter++;
+
+		for (int i = 0; i < icoSphereModel.facesCount; i++)
+		{
+			const Face face = icoSphereModel.faces[i];
+
+			gte_loadV0(&icoSphereModel.vertices[face.i1]);
+			gte_loadV1(&icoSphereModel.vertices[face.i2]);
+			gte_loadV2(&icoSphereModel.vertices[face.i3]);
+			gte_command(GTE_CMD_RTPT | GTE_SF);
+
+			uint32_t xy0 = 0;
+			if (face.type == QUAD) {
+				gte_command(GTE_CMD_NCLIP);
+
+				if (gte_getDataReg(GTE_MAC0) <= 0)
+					continue;
+
+				xy0 = gte_getDataReg(GTE_SXY0);
+				gte_loadV0(&icoSphereModel.vertices[face.i4]);
+				gte_command(GTE_CMD_RTPS | GTE_SF);
+				gte_command(GTE_CMD_AVSZ4 | GTE_SF);
+			} else {
+				gte_command(GTE_CMD_AVSZ3 | GTE_SF);
+			}
+
+			int zIndex = gte_getDataReg(GTE_OTZ);
+
+			if ((zIndex < 0) || (zIndex >= ORDERING_TABLE_SIZE))
+				continue;
+
+			const uint32_t color = colors[i % 6];
+
+			if (face.type == QUAD) {
+				ptr = allocatePacket(chain, zIndex, 5);
+				ptr[0] = color | gp0_shadedQuad(false, false, false);
+				ptr[1] = xy0;
+				gte_storeDataReg(GTE_SXY0, 2 * 4, ptr);
+				gte_storeDataReg(GTE_SXY1, 3 * 4, ptr);
+				gte_storeDataReg(GTE_SXY2, 4 * 4, ptr);
+			} else {
+				ptr = allocatePacket(chain, zIndex, 4);
+				ptr[0] = color | gp0_shadedTriangle(false, false, false);
+				gte_storeDataReg(GTE_SXY0, 1 * 4, ptr);
+				gte_storeDataReg(GTE_SXY1, 2 * 4, ptr);
+				gte_storeDataReg(GTE_SXY2, 3 * 4, ptr);
+			}
+		}
+
+		ptr = allocatePacket(chain, ORDERING_TABLE_SIZE - 1, 3);
+		ptr[0] = gp0_rgb(64, 64, 64) | gp0_vramFill();
+		ptr[1] = gp0_xy(bufferX, bufferY);
+		ptr[2] = gp0_xy(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		ptr = allocatePacket(chain, ORDERING_TABLE_SIZE - 1, 4);
 		ptr[0] = gp0_texpage(0, true, false);
 		ptr[1] = gp0_fbOffset1(bufferX, bufferY);
 		ptr[2] = gp0_fbOffset2(
@@ -55,18 +129,6 @@ int main(int argc, const char **argv) {
 			bufferY + SCREEN_HEIGHT - 2
 		);
 		ptr[3] = gp0_fbOrigin(bufferX, bufferY);
-
-		ptr = allocatePacket(chain, 3);
-		ptr[0] = gp0_rgb(0, 0, 0) | gp0_vramFill();
-		ptr[1] = gp0_xy(bufferX, bufferY);
-		ptr[2] = gp0_xy(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-		ptr = allocatePacket(chain, 3);
-		ptr[0] = gp0_rgb(255, 0, 192) | gp0_rectangle(false, false, false);
-		ptr[1] = gp0_xy(x, y);
-		ptr[2] = gp0_xy(16, 16);
-
-		*(chain->nextPacket) = gp0_endTag(0);
 
 		const uint16_t buttons = readControllerButtons(0);
 
@@ -89,7 +151,7 @@ int main(int argc, const char **argv) {
 
 		waitForGP0Ready();
 		waitForVSync();
-		sendLinkedList(chain->data);
+		sendLinkedList(&(chain->orderingTable)[ORDERING_TABLE_SIZE - 1]);
 	}
 
 	return 0;

@@ -19,11 +19,17 @@
 #include <stdint.h>
 #include "ps1/gpucmd.h"
 
-#define DMA_MAX_CHUNK_SIZE   16
-#define CHAIN_BUFFER_SIZE  1024
+// In order for Z averaging to work properly, ORDERING_TABLE_SIZE should be set
+// to either a relatively high value (1024 or more) or a multiple of 12; see
+// setupGTE() for more details. Higher values will take up more memory but are
+// required to render more complex scenes with wide depth ranges correctly.
+#define DMA_MAX_CHUNK_SIZE    16
+#define CHAIN_BUFFER_SIZE   1024
+#define ORDERING_TABLE_SIZE  240
 
 typedef struct {
 	uint32_t data[CHAIN_BUFFER_SIZE];
+	uint32_t orderingTable[ORDERING_TABLE_SIZE];
 	uint32_t *nextPacket;
 } DMAChain;
 
@@ -50,7 +56,8 @@ void sendVRAMData(
 	int        width,
 	int        height
 );
-uint32_t *allocatePacket(DMAChain *chain, int numCommands);
+void clearOrderingTable(uint32_t *table, int numEntries);
+uint32_t *allocatePacket(DMAChain *chain, int zIndex, int numCommands);
 
 void uploadTexture(
 	TextureInfo *info,
