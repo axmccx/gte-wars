@@ -4,6 +4,15 @@
 #include "model.h"
 
 
+static int16_t read_s16(const uint8_t *p) {
+    return (int16_t)(p[0] | (p[1] << 8));
+}
+
+static uint16_t read_u16(const uint8_t *p) {
+    return (uint16_t)(p[0] | (p[1] << 8));
+}
+
+
 ObjModel loadObjModel(const uint8_t *data) {
     const uint8_t *ptr = data;
     ObjModel obj_model;
@@ -13,27 +22,24 @@ ObjModel loadObjModel(const uint8_t *data) {
     assert(strncmp(header, "MODEL", 5) == 0);
     ptr += 5;
 
-    const uint8_t dat_type = *ptr;
-    ptr++;
-
-    const uint16_t vertexCount = ptr[0] | (ptr[1] << 8);
+    const uint16_t vertexCount = read_u16(ptr);
     obj_model.vertexCount = vertexCount;
     ptr += 2;
 
-    const uint16_t facesCount = ptr[0] | (ptr[1] << 8);
+    const uint16_t facesCount = read_u16(ptr);
     obj_model.facesCount = facesCount;
     ptr += 2;
 
     obj_model.vertices = malloc(vertexCount * sizeof(GTEVector16));
 
     for (int i = 0; i < vertexCount; i++) {
-        obj_model.vertices[i].x = ptr[0] | (ptr[1] << 8);
+        obj_model.vertices[i].x = read_s16(ptr);
         ptr += 2;
 
-        obj_model.vertices[i].y = ptr[0] | (ptr[1] << 8);
+        obj_model.vertices[i].y = read_s16(ptr);
         ptr += 2;
 
-        obj_model.vertices[i].z = ptr[0] | (ptr[1] << 8);
+        obj_model.vertices[i].z = read_s16(ptr);
         ptr += 2;
 
         obj_model.vertices[i]._padding = 0;
@@ -42,20 +48,26 @@ ObjModel loadObjModel(const uint8_t *data) {
     obj_model.faces = malloc(facesCount * sizeof(Face));
 
     for (int f = 0; f < facesCount; f++) {
-        obj_model.faces[f].i1 = ptr[0] | (ptr[1] << 8);
+        Face *face = &obj_model.faces[f];
+
+        face->type = *ptr;
+        ptr++;
+        assert(face->type == TRI || face->type == QUAD);
+
+        face->i1 = read_u16(ptr);
         ptr += 2;
 
-        obj_model.faces[f].i2 = ptr[0] | (ptr[1] << 8);
+        face->i2 = read_u16(ptr);
         ptr += 2;
 
-        obj_model.faces[f].i3 = ptr[0] | (ptr[1] << 8);
+        face->i3 = read_u16(ptr);
         ptr += 2;
 
-        if (dat_type == 1) { // QUAD
-            obj_model.faces[f].i4 = ptr[0] | (ptr[1] << 8);
+        if (face->type == QUAD) {
+            face->i4 = read_u16(ptr);
             ptr += 2;
         } else {
-            obj_model.faces[f].i4 = 0; // unused for triangle
+            face->i4 = 0;
         }
     }
 

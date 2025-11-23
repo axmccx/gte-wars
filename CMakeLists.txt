@@ -43,3 +43,8 @@ covertObj(
     objects/ico-sphere.dat
 )
 addBinaryFile(main icoSphere "${PROJECT_BINARY_DIR}/objects/ico-sphere.dat")
+covertObj(
+        objects/monkey.obj
+        objects/monkey.dat
+)
+addBinaryFile(main monkeyObj "${PROJECT_BINARY_DIR}/objects/monkey.dat")

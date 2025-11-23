@@ -10,6 +10,7 @@
 #define SCREEN_HEIGHT    240
 
 extern const uint8_t icoSphere[];
+extern const uint8_t monkeyObj[];
 
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
@@ -37,7 +38,10 @@ int main(int argc, const char **argv) {
 
 	uint32_t colors[6] = {0x0000ff, 0x0000ff, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00};
 
-	volatile ObjModel icoSphereModel = loadObjModel(icoSphere);
+	// ObjModel icoSphereModel = loadObjModel(icoSphere);
+	ObjModel monkeyModel = loadObjModel(monkeyObj);
+
+	ObjModel modelToRender = monkeyModel;
 
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
@@ -57,9 +61,9 @@ int main(int argc, const char **argv) {
 		clearOrderingTable(chain->orderingTable, ORDERING_TABLE_SIZE);
 		chain->nextPacket = chain->data;
 
-		gte_setControlReg(GTE_TRX, x << 4);
-		gte_setControlReg(GTE_TRY, y << 4);
-		gte_setControlReg(GTE_TRZ,512);
+		gte_setControlReg(GTE_TRX, x << 2);
+		gte_setControlReg(GTE_TRY, y << 2);
+		gte_setControlReg(GTE_TRZ,1 << 8);
 		gte_setRotationMatrix(
 			ONE,   0,   0,
 			  0, ONE,   0,
@@ -69,13 +73,12 @@ int main(int argc, const char **argv) {
 		rotateCurrentMatrix(0, frameCounter * 6, 0);
 		frameCounter++;
 
-		for (int i = 0; i < icoSphereModel.facesCount; i++)
-		{
-			const Face face = icoSphereModel.faces[i];
+		for (int i = 0; i < modelToRender.facesCount; i++) {
+			const Face face = modelToRender.faces[i];
 
-			gte_loadV0(&icoSphereModel.vertices[face.i1]);
-			gte_loadV1(&icoSphereModel.vertices[face.i2]);
-			gte_loadV2(&icoSphereModel.vertices[face.i3]);
+			gte_loadV0(&modelToRender.vertices[face.i1]);
+			gte_loadV1(&modelToRender.vertices[face.i2]);
+			gte_loadV2(&modelToRender.vertices[face.i3]);
 			gte_command(GTE_CMD_RTPT | GTE_SF);
 
 			uint32_t xy0 = 0;
@@ -86,7 +89,7 @@ int main(int argc, const char **argv) {
 					continue;
 
 				xy0 = gte_getDataReg(GTE_SXY0);
-				gte_loadV0(&icoSphereModel.vertices[face.i4]);
+				gte_loadV0(&modelToRender.vertices[face.i4]);
 				gte_command(GTE_CMD_RTPS | GTE_SF);
 				gte_command(GTE_CMD_AVSZ4 | GTE_SF);
 			} else {

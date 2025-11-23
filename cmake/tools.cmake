@@ -121,12 +121,13 @@ endfunction()
 
 
 function(covertObj input)
+	set(CONVERTER   "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tools/convert_obj.py")
 	add_custom_command(
 			OUTPUT  ${ARGN}
-			DEPENDS "${PROJECT_SOURCE_DIR}/${input}"
+			DEPENDS "${PROJECT_SOURCE_DIR}/${input}" "${CONVERTER}"
 			COMMAND
 			"${Python3_EXECUTABLE}"
-			"${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tools/convert_obj.py"
+			"${CONVERTER}"
 			"${PROJECT_SOURCE_DIR}/${input}"
 			${ARGN}
 			VERBATIM

@@ -58,20 +58,18 @@ def parse_obj_file(file_path):
 
 
 def write_model_bin(output, vertices, faces):
-    dat_type = 1 if faces[0].is_quad else 0
-
     with open(output, "wb") as f:
         f.write(b"MODEL")
-        f.write(struct.pack("<B", dat_type))
         f.write(struct.pack("<H", len(vertices)))
         f.write(struct.pack("<H", len(faces)))
 
-        for vertex in vertices:
-            f.write(struct.pack("<hhh", vertex.x, vertex.y, vertex.z))
+        for v in vertices:
+            f.write(struct.pack("<hhh", v.x, v.y, v.z))
 
-        face_fmt = "<hhhh" if faces[0].is_quad else "<hhh"
         for face in faces:
-            f.write(struct.pack(face_fmt, *face.vertex_idx))
+            is_quad = len(face.vertex_idx) == 4
+            face_fmt = "<BHHHH" if is_quad else "<BHHH"
+            f.write(struct.pack(face_fmt, len(face.vertex_idx), *face.vertex_idx))
 
 
 if __name__ == "__main__":

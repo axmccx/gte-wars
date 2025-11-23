@@ -17,3 +17,4 @@ __pycache__/
 CMakeUserPresets.json
 
 *.dat
+*.mtl

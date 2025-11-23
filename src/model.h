@@ -2,14 +2,14 @@
 
 #include "ps1/gte.h"
 
-typedef enum {
-    TRI = 3,
-    QUAD = 4
-} FaceType;
+typedef uint8_t FaceType;
+
+#define TRI  3
+#define QUAD 4
 
 typedef struct {
-    uint16_t i1, i2, i3, i4;
     FaceType type;
+    uint16_t i1, i2, i3, i4;
 } Face;
 
 typedef struct {
