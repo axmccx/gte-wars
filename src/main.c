@@ -5,6 +5,7 @@
 #include "ps1/registers.h"
 #include "controller.h"
 #include "model.h"
+#include "world.h"
 
 #define SCREEN_WIDTH     320
 #define SCREEN_HEIGHT    240
@@ -33,21 +34,32 @@ int main(int argc, const char **argv) {
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 	GPU_GP1 = gp1_dispBlank(false);
 
-	int x = 0;
-	int y = 0;
-
 	uint32_t colors[6] = {0x0000ff, 0x0000ff, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00};
 
-	// ObjModel icoSphereModel = loadObjModel(icoSphere);
-	ObjModel monkeyModel = loadObjModel(monkeyObj);
+	ObjModel icoSphereModel = loadObjModel(icoSphere);
+	// ObjModel monkeyModel = loadObjModel(monkeyObj);
 
-	ObjModel modelToRender = monkeyModel;
+	ObjModel modelToRender = icoSphereModel;
 
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
-	int frameCounter = 0;
+	int rotationY = 0;
+	World world;
+	worldInit(&world);
 
 	for (;;) {
+		// Get controller buttons
+		const uint16_t buttons = readControllerButtons(0);
+
+		char buffer[256];
+		sprintf(buffer, "buttons: %b", buttons);
+		puts(buffer);
+
+		// Update world
+		updatePlayerPosition(&world, buttons);
+		rotationY += 6;
+
+		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
 		const int bufferY = 0;
 
@@ -61,17 +73,16 @@ int main(int argc, const char **argv) {
 		clearOrderingTable(chain->orderingTable, ORDERING_TABLE_SIZE);
 		chain->nextPacket = chain->data;
 
-		gte_setControlReg(GTE_TRX, x << 2);
-		gte_setControlReg(GTE_TRY, y << 2);
+		// Build packet chain
+		gte_setControlReg(GTE_TRX, world.player.xPos << 2);
+		gte_setControlReg(GTE_TRY, world.player.yPos << 2);
 		gte_setControlReg(GTE_TRZ,1 << 8);
 		gte_setRotationMatrix(
 			ONE,   0,   0,
 			  0, ONE,   0,
 			  0,   0, ONE
 		);
-
-		rotateCurrentMatrix(0, frameCounter * 6, 0);
-		frameCounter++;
+		rotateCurrentMatrix(0, rotationY, 0);
 
 		for (int i = 0; i < modelToRender.facesCount; i++) {
 			const Face face = modelToRender.faces[i];
@@ -133,25 +144,7 @@ int main(int argc, const char **argv) {
 		);
 		ptr[3] = gp0_fbOrigin(bufferX, bufferY);
 
-		const uint16_t buttons = readControllerButtons(0);
-
-		char buffer[256];
-		sprintf(buffer, "buttons: %b", buttons);
-		puts(buffer);
-
-		if (buttons & BUTTON_UP) {
-			y--;
-		}
-		if (buttons & BUTTON_DOWN) {
-			y++;
-		}
-		if (buttons & BUTTON_RIGHT) {
-			x++;
-		}
-		if (buttons & BUTTON_LEFT) {
-			x--;
-		}
-
+		// Render frame
 		waitForGP0Ready();
 		waitForVSync();
 		sendLinkedList(&(chain->orderingTable)[ORDERING_TABLE_SIZE - 1]);
