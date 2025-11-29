@@ -57,7 +57,7 @@ int main(int argc, const char **argv) {
 		puts(buffer);
 
 		// Update world
-		updatePlayerPosition(&world, controller_response.buttons);
+		updatePlayer(&world, controller_response);
 		rotationY += 6;
 		rotationZ += 3;
 
@@ -78,7 +78,7 @@ int main(int argc, const char **argv) {
 		// Build packet chain
 		gte_setControlReg(GTE_TRX, world.player.x << 2);
 		gte_setControlReg(GTE_TRY, world.player.y << 2);
-		gte_setControlReg(GTE_TRZ,1 << 8);
+		gte_setControlReg(GTE_TRZ,756);
 		gte_setRotationMatrix(
 			ONE,   0,   0,
 			  0, ONE,   0,

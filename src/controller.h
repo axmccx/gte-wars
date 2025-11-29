@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define DTR_DELAY 60
 
 typedef enum {

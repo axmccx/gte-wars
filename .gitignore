@@ -18,3 +18,5 @@ CMakeUserPresets.json
 
 *.dat
 *.mtl
+
+comport.txt

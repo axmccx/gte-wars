@@ -3,6 +3,7 @@
 
 #define MAX_ENEMIES 5
 #define MAX_BULLETS 100
+#define MAX_SPEED 5
 
 typedef struct {
     Entity player;
@@ -11,4 +12,4 @@ typedef struct {
 } World;
 
 void worldInit(World *world);
-void updatePlayerPosition(World *world, uint16_t buttons);
+void updatePlayer(World *world, ControllerResponse controller_response);
