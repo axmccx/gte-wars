@@ -43,6 +43,12 @@ typedef enum {
     CMD_CARD_WRITE      = 'W'  // Write 128-byte memory card sector
 } DeviceCommand;
 
+typedef struct {
+    uint16_t buttons;
+    uint16_t right_joystick;
+    uint16_t left_joystick;
+} ControllerResponse;
+
 void initControllerBus(void);
 
-uint16_t readControllerButtons(int port);
+ControllerResponse readController(int port);

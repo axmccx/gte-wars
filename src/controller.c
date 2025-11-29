@@ -59,7 +59,9 @@ static uint8_t exchangeByte(uint8_t value) {
 
 static int exchangeControllerPacket(
 	const uint8_t *request,
-	uint8_t *response
+	uint8_t *response,
+	int reqLength,
+	int maxRespLength
 ) {
 	IRQ_STAT = ~(1 << IRQ_SIO0);
 	SIO_CTRL(0) |= SIO_CTRL_DTR | SIO_CTRL_ACKNOWLEDGE;
@@ -70,8 +72,6 @@ static int exchangeControllerPacket(
 	SIO_DATA(0) = ADDR_CONTROLLER;
 
 	if (waitForAcknowledge()) {
-		int reqLength = 4;
-		const int maxRespLength = 8;
 		while (SIO_STAT(0) & SIO_STAT_RX_NOT_EMPTY)
 			SIO_DATA(0);
 
@@ -96,8 +96,8 @@ static int exchangeControllerPacket(
 	return respLength;
 }
 
-uint16_t readControllerButtons(const int port) {
-    uint8_t request[4], response[8];
+ControllerResponse readController(const int port) {
+    uint8_t request[4], responseBuf[8];
 
     request[0] = CMD_POLL;
     request[1] = 0x00;
@@ -107,12 +107,22 @@ uint16_t readControllerButtons(const int port) {
     selectPort(port);
     const int respLength = exchangeControllerPacket(
         request,
-        response
+        responseBuf,
+        sizeof(request),
+        sizeof(responseBuf)
     );
 
+	ControllerResponse response;
+	response.buttons = 0;
+	response.right_joystick = 0;
+	response.left_joystick = 0;
+
     if (respLength < 4) {
-        return 0;
+        return response;
     }
 
-    return (response[2] | (response[3] << 8)) ^ 0xffff;
+    response.buttons = (responseBuf[2] | (responseBuf[3] << 8)) ^ 0xffff;
+    response.right_joystick = (responseBuf[4] | (responseBuf[5] << 8)) ^ 0xffff;
+    response.left_joystick = (responseBuf[6] | (responseBuf[7] << 8)) ^ 0xffff;
+	return response;
 }

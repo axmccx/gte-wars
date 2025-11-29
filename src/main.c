@@ -36,6 +36,7 @@ int main(int argc, const char **argv) {
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
 	int rotationY = 0;
+	int rotationZ = 0;
 	World world;
 	worldInit(&world);
 
@@ -43,15 +44,22 @@ int main(int argc, const char **argv) {
 
 	for (;;) {
 		// Get controller buttons
-		const uint16_t buttons = readControllerButtons(0);
+		const ControllerResponse controller_response = readController(0);
 
 		char buffer[256];
-		sprintf(buffer, "buttons: %b", buttons);
+		sprintf(
+			buffer,
+			"buttons: %016b - left_joystick: %016b - right_joystick: %016b",
+			controller_response.buttons,
+			controller_response.left_joystick,
+			controller_response.right_joystick
+		);
 		puts(buffer);
 
 		// Update world
-		updatePlayerPosition(&world, buttons);
+		updatePlayerPosition(&world, controller_response.buttons);
 		rotationY += 6;
+		rotationZ += 3;
 
 		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -76,7 +84,7 @@ int main(int argc, const char **argv) {
 			  0, ONE,   0,
 			  0,   0, ONE
 		);
-		rotateCurrentMatrix(0, rotationY, 0);
+		rotateCurrentMatrix(0, rotationY, rotationZ);
 
 		for (int i = 0; i < modelToRender->facesCount; i++) {
 			const Face face = modelToRender->faces[i];
