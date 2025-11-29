@@ -1,11 +1,13 @@
 #pragma once
+#include "entity.h"
+
+#define MAX_ENEMIES 5
+#define MAX_BULLETS 100
 
 typedef struct {
-    int xPos, yPos;
-} Player;
-
-typedef struct {
-    Player player;
+    Entity player;
+    Entity enemies[MAX_ENEMIES];
+    Entity bullets[MAX_BULLETS];
 } World;
 
 void worldInit(World *world);

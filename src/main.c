@@ -10,9 +10,6 @@
 #define SCREEN_WIDTH     320
 #define SCREEN_HEIGHT    240
 
-extern const uint8_t icoSphere[];
-extern const uint8_t monkeyObj[];
-
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
 	initControllerBus();
@@ -36,16 +33,13 @@ int main(int argc, const char **argv) {
 
 	uint32_t colors[6] = {0x0000ff, 0x0000ff, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00};
 
-	ObjModel icoSphereModel = loadObjModel(icoSphere);
-	// ObjModel monkeyModel = loadObjModel(monkeyObj);
-
-	ObjModel modelToRender = icoSphereModel;
-
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
 	int rotationY = 0;
 	World world;
 	worldInit(&world);
+
+	ObjModel *modelToRender = world.player.model;
 
 	for (;;) {
 		// Get controller buttons
@@ -74,8 +68,8 @@ int main(int argc, const char **argv) {
 		chain->nextPacket = chain->data;
 
 		// Build packet chain
-		gte_setControlReg(GTE_TRX, world.player.xPos << 2);
-		gte_setControlReg(GTE_TRY, world.player.yPos << 2);
+		gte_setControlReg(GTE_TRX, world.player.x << 2);
+		gte_setControlReg(GTE_TRY, world.player.y << 2);
 		gte_setControlReg(GTE_TRZ,1 << 8);
 		gte_setRotationMatrix(
 			ONE,   0,   0,
@@ -84,12 +78,12 @@ int main(int argc, const char **argv) {
 		);
 		rotateCurrentMatrix(0, rotationY, 0);
 
-		for (int i = 0; i < modelToRender.facesCount; i++) {
-			const Face face = modelToRender.faces[i];
+		for (int i = 0; i < modelToRender->facesCount; i++) {
+			const Face face = modelToRender->faces[i];
 
-			gte_loadV0(&modelToRender.vertices[face.i1]);
-			gte_loadV1(&modelToRender.vertices[face.i2]);
-			gte_loadV2(&modelToRender.vertices[face.i3]);
+			gte_loadV0(&modelToRender->vertices[face.i1]);
+			gte_loadV1(&modelToRender->vertices[face.i2]);
+			gte_loadV2(&modelToRender->vertices[face.i3]);
 			gte_command(GTE_CMD_RTPT | GTE_SF);
 
 			uint32_t xy0 = 0;
@@ -100,7 +94,7 @@ int main(int argc, const char **argv) {
 					continue;
 
 				xy0 = gte_getDataReg(GTE_SXY0);
-				gte_loadV0(&modelToRender.vertices[face.i4]);
+				gte_loadV0(&modelToRender->vertices[face.i4]);
 				gte_command(GTE_CMD_RTPS | GTE_SF);
 				gte_command(GTE_CMD_AVSZ4 | GTE_SF);
 			} else {

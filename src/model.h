@@ -2,13 +2,14 @@
 
 #include "ps1/gte.h"
 
-typedef uint8_t FaceType;
-
 #define TRI  3
 #define QUAD 4
 
+extern const uint8_t icoSphere[];
+extern const uint8_t monkeyObj[];
+
 typedef struct {
-    FaceType type;
+    uint8_t type;
     uint16_t i1, i2, i3, i4;
 } Face;
 
@@ -19,4 +20,4 @@ typedef struct {
     Face *faces;
 } ObjModel;
 
-ObjModel loadObjModel(const uint8_t *data);
+void loadObjModel(ObjModel *obj_model, const uint8_t *data);

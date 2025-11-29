@@ -1,4 +1,5 @@
 #include "ps1/registers.h"
+#include "controller.h"
 
 static void delayMicroseconds(int time) {
 	time = ((time * 271) + 4) / 8;
@@ -36,30 +37,6 @@ static bool waitForAcknowledge() {
 	}
 	return false;
 }
-
-typedef enum {
-	ADDR_CONTROLLER  = 0x01,
-	ADDR_MEMORY_CARD = 0x81
-} DeviceAddress;
-
-typedef enum {
-    CMD_INIT_PRESSURE   = '@', // Initialize DualShock pressure sensors (config)
-    CMD_POLL            = 'B', // Read controller state
-    CMD_CONFIG_MODE     = 'C', // Enter or exit configuration mode
-    CMD_SET_ANALOG      = 'D', // Set analog mode/LED state (config)
-    CMD_GET_ANALOG      = 'E', // Get analog mode/LED state (config)
-    CMD_GET_MOTOR_INFO  = 'F', // Get information about a motor (config)
-    CMD_GET_MOTOR_LIST  = 'G', // Get list of all motors (config)
-    CMD_GET_MOTOR_STATE = 'H', // Get current state of vibration motors (config)
-    CMD_GET_MODE        = 'L', // Get list of all supported modes (config)
-    CMD_REQUEST_CONFIG  = 'M', // Configure poll request format (config)
-    CMD_RESPONSE_CONFIG = 'O', // Configure poll response format (config)
-    CMD_CARD_READ       = 'R', // Read 128-byte memory card sector
-    CMD_CARD_GET_SIZE   = 'S', // Retrieve memory card size information
-    CMD_CARD_WRITE      = 'W'  // Write 128-byte memory card sector
-} DeviceCommand;
-
-#define DTR_DELAY 60
 
 static void selectPort(const int port) {
     if (port)
