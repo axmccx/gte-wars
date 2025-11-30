@@ -7,6 +7,7 @@
 
 extern const uint8_t icoSphere[];
 extern const uint8_t monkeyObj[];
+extern const uint8_t playerShipObj[];
 
 typedef struct {
     uint8_t type;

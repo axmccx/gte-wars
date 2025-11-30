@@ -6,9 +6,7 @@ void worldInit(World *world) {
     world->player.x = 0;
     world->player.y = 0;
     world->player.model = malloc(sizeof *world->player.model);
-
-    // loadObjModel(monkeyObj);
-    loadObjModel(world->player.model, icoSphere);
+    loadObjModel(world->player.model, playerShipObj);
 }
 
 void updatePlayer(World *world, const ControllerResponse controller_response) {

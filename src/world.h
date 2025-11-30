@@ -3,7 +3,7 @@
 
 #define MAX_ENEMIES 5
 #define MAX_BULLETS 100
-#define MAX_SPEED 5
+#define MAX_SPEED 30
 
 typedef struct {
     Entity player;

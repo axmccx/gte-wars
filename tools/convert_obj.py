@@ -3,7 +3,7 @@ import sys
 import struct
 
 MAX_INT = 32_767
-POINT_SCALE = 128
+POINT_SCALE = 16
 
 
 class Vertex:

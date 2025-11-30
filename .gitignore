@@ -11,6 +11,7 @@ env/
 __pycache__/
 *.pyc
 *.pyo
+cmake-build-debug/*
 
 # Do not include user-specific workspace and configuration files.
 *.code-workspace

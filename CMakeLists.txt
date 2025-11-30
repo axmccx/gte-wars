@@ -48,3 +48,8 @@ covertObj(
         objects/monkey.dat
 )
 addBinaryFile(main monkeyObj "${PROJECT_BINARY_DIR}/objects/monkey.dat")
+covertObj(
+        objects/ship.obj
+        objects/ship.dat
+)
+addBinaryFile(main playerShipObj "${PROJECT_BINARY_DIR}/objects/ship.dat")

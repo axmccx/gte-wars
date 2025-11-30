@@ -25,7 +25,7 @@
 // required to render more complex scenes with wide depth ranges correctly.
 #define DMA_MAX_CHUNK_SIZE    16
 #define CHAIN_BUFFER_SIZE   8192
-#define ORDERING_TABLE_SIZE  1024
+#define ORDERING_TABLE_SIZE  1080
 
 typedef struct {
 	uint32_t data[CHAIN_BUFFER_SIZE];
