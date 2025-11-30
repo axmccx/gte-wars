@@ -35,7 +35,6 @@ int main(int argc, const char **argv) {
 
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
-	int rotationY = 0;
 	World world;
 	worldInit(&world);
 
@@ -57,7 +56,6 @@ int main(int argc, const char **argv) {
 
 		// Update world
 		updatePlayer(&world, controller_response);
-		rotationY += 32;
 
 		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -76,13 +74,13 @@ int main(int argc, const char **argv) {
 		// Build packet chain
 		gte_setControlReg(GTE_TRX, world.player.x);
 		gte_setControlReg(GTE_TRY, world.player.y);
-		gte_setControlReg(GTE_TRZ, 2500);
+		gte_setControlReg(GTE_TRZ, 2400);
 		gte_setRotationMatrix(
 			ONE,   0,   0,
 			  0, ONE,   0,
 			  0,   0, ONE
 		);
-		rotateCurrentMatrix(0, rotationY, 0);
+		rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
 
 		for (int i = 0; i < modelToRender->facesCount; i++) {
 			const Face face = modelToRender->faces[i];
