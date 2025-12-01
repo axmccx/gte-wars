@@ -114,15 +114,18 @@ ControllerResponse readController(const int port) {
 
 	ControllerResponse response;
 	response.buttons = 0;
-	response.right_joystick = 0;
-	response.left_joystick = 0;
+	response.right_joystick = 0x8080;
+	response.left_joystick = 0x8080;
 
     if (respLength < 4) {
         return response;
     }
 
-    response.buttons = (responseBuf[2] | (responseBuf[3] << 8)) ^ 0xffff;
-    response.right_joystick = (responseBuf[4] | (responseBuf[5] << 8)) ^ 0xffff;
-    response.left_joystick = (responseBuf[6] | (responseBuf[7] << 8)) ^ 0xffff;
+	response.buttons = (responseBuf[2] | (responseBuf[3] << 8)) ^ 0xffff;
+
+	if (responseBuf[0] == 0x73) {
+		response.right_joystick = responseBuf[4] | (responseBuf[5] << 8);
+		response.left_joystick = responseBuf[6] | (responseBuf[7] << 8);
+	}
 	return response;
 }

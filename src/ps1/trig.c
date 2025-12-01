@@ -55,3 +55,32 @@ int isin2(int x) {
 
 	return (c >= 0) ? y : (-y);
 }
+
+// referenced from:
+// https://dspguru.com/dsp/tricks/fixed-point-atan2-with-self-normalization/
+// Outputs angle in range of 0-4095
+int atan2(int dy, int dx) {
+	if (dx == 0 && dy == 0) return 0;
+
+	const int qtr_pi = 512;
+	const int three_qtr_pi = 1536;
+
+	int abs_y = (dy < 0) ? -dy : dy;
+	abs_y += 1;  // prevent zero division
+
+	int r, angle;
+
+	if (dx >= 0) {
+		r = ((dx - abs_y) << 12) / (dx + abs_y);
+		// angle = π/4 - (π/4) * r
+		angle = qtr_pi - ((qtr_pi * r) >> 12);
+	} else {
+		r = ((dx + abs_y) << 12) / (abs_y - dx);
+		// angle = 3π/4 - (π/4) * r
+		angle = three_qtr_pi - ((qtr_pi * r) >> 12);
+	}
+
+	// rotate by a quarter circle to account for joystick orientation
+	angle = (dy < 0) ? (1024 - angle) : (1024 + angle);
+	return angle & 0xFFF;
+}

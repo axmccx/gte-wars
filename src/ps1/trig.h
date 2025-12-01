@@ -27,6 +27,7 @@ extern "C" {
 
 int isin(int x);
 int isin2(int x);
+int atan2(int dy, int dx);
 
 static inline int icos(int x) {
 	return isin(x + (1 << ISIN_SHIFT));

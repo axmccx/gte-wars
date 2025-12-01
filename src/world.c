@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "world.h"
 #include "stdlib.h"
+#include "ps1/trig.h"
 
 void worldInit(World *world) {
     world->player.x = 0;
@@ -33,5 +34,26 @@ void updatePlayer(World *world, const ControllerResponse controller_response) {
     const int dir_angle = dir_to_angle[dx+1][dy+1];
     if (dir_angle >= 0) {
         world->player.dir = dir_angle;
+    }
+
+    uint8_t stick_x_raw = controller_response.left_joystick & 0xFF;
+    uint8_t stick_y_raw = (controller_response.left_joystick >> 8) & 0xFF;
+
+    int8_t stick_x = (int8_t)(stick_x_raw - 128);
+    int8_t stick_y = (int8_t)(stick_y_raw - 128);
+
+    const int8_t DEADZONE = 64;
+
+    int abs_x = (stick_x < 0) ? -stick_x : stick_x;
+    int abs_y = (stick_y < 0) ? -stick_y : stick_y;
+    int magnitude = abs_x + abs_y;
+
+    if (magnitude > DEADZONE) {
+        int dx = (stick_x * MAX_SPEED) / 128;
+        int dy = (stick_y * MAX_SPEED) / 128;
+
+        world->player.x += dx;
+        world->player.y += dy;
+        world->player.dir = atan2(stick_y, stick_x);
     }
 }
