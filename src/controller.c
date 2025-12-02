@@ -1,5 +1,6 @@
 #include "ps1/registers.h"
 #include "controller.h"
+#include "stdio.h"
 
 static void delayMicroseconds(int time) {
 	time = ((time * 271) + 4) / 8;
@@ -127,5 +128,16 @@ ControllerResponse readController(const int port) {
 		response.right_joystick = responseBuf[4] | (responseBuf[5] << 8);
 		response.left_joystick = responseBuf[6] | (responseBuf[7] << 8);
 	}
+
+	char buffer[256];
+	sprintf(
+		buffer,
+		"buttons: %016b - left_joystick: %016b - right_joystick: %016b",
+		response.buttons,
+		response.left_joystick,
+		response.right_joystick
+	);
+	puts(buffer);
+
 	return response;
 }

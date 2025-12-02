@@ -27,6 +27,7 @@ add_library(
     src/ps1/trig.c
     src/world.c
     src/model.c
+    src/render.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)
 

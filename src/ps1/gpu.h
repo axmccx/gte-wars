@@ -27,6 +27,10 @@
 #define CHAIN_BUFFER_SIZE   8192
 #define ORDERING_TABLE_SIZE  1080
 
+#define SCREEN_WIDTH     320
+#define SCREEN_HEIGHT    240
+#define CAMERA_DISTANCE 2400
+
 typedef struct {
 	uint32_t data[CHAIN_BUFFER_SIZE];
 	uint32_t orderingTable[ORDERING_TABLE_SIZE];
