@@ -5,9 +5,8 @@
 #define TRI  3
 #define QUAD 4
 
-extern const uint8_t icoSphere[];
-extern const uint8_t monkeyObj[];
 extern const uint8_t playerShipObj[];
+extern const uint8_t bulletObj[];
 
 typedef struct {
     uint8_t type;
@@ -20,5 +19,11 @@ typedef struct {
     GTEVector16 *vertices;
     Face *faces;
 } ObjModel;
+
+typedef struct {
+    ObjModel *player;
+    ObjModel *bullet;
+    ObjModel *enemy;
+} Models;
 
 void loadObjModel(ObjModel *obj_model, const uint8_t *data);

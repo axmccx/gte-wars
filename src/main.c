@@ -39,7 +39,10 @@ int main(int argc, const char **argv) {
 		const ControllerResponse controller_response = readController(0);
 
 		// Update world
+		world.frameCount++;
 		updatePlayer(&world, controller_response);
+		spawnBullets(&world, controller_response);
+		updateBullets(&world);
 
 		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -64,7 +67,24 @@ int main(int argc, const char **argv) {
 			  0,   0, ONE
 		);
 		rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
-		buildRenderPackets(chain, world.player.model);
+		buildRenderPackets(chain, world.models.player, COLOR_CYAN);
+
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			Bullet bullet = world.bullets[i];
+
+			if (bullet.alive) {
+				gte_setControlReg(GTE_TRX, bullet.x);
+				gte_setControlReg(GTE_TRY, bullet.y);
+				gte_setControlReg(GTE_TRZ, 2400);
+				gte_setRotationMatrix(
+					ONE,   0,   0,
+					  0, ONE,   0,
+					  0,   0, ONE
+				);
+				rotateCurrentMatrix(world.bullets[i].dir, 0, 0);
+				buildRenderPackets(chain, world.models.bullet, COLOR_YELLOW);
+			}
+		}
 
 		// Render frame
 		waitForGP0Ready();

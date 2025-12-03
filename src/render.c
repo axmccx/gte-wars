@@ -1,8 +1,6 @@
 #include "model.h"
 #include "render.h"
 
-uint32_t colors[6] = {0x0000ff, 0x0000ff, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00};
-
 void initOrderingChain(DMAChain *chain, int bufferX, int bufferY) {
     uint32_t *ptr = allocatePacket(chain, ORDERING_TABLE_SIZE - 1, 3);
     ptr[0] = gp0_rgb(0, 0, 32) | gp0_vramFill();
@@ -19,7 +17,7 @@ void initOrderingChain(DMAChain *chain, int bufferX, int bufferY) {
     ptr[3] = gp0_fbOrigin(bufferX, bufferY);
 }
 
-void buildRenderPackets(DMAChain *chain, ObjModel *modelToRender) {
+void buildRenderPackets(DMAChain *chain, ObjModel *modelToRender, uint32_t color) {
     uint32_t *ptr;
 
     for (int i = 0; i < modelToRender->facesCount; i++) {
@@ -49,8 +47,6 @@ void buildRenderPackets(DMAChain *chain, ObjModel *modelToRender) {
 
         if ((zIndex < 0) || (zIndex >= ORDERING_TABLE_SIZE))
             continue;
-
-        const uint32_t color = colors[5];
 
         if (face.type == QUAD) {
             ptr = allocatePacket(chain, zIndex, 5);

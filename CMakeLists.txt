@@ -40,17 +40,12 @@ link_libraries(common)
 
 addPS1Executable(main src/main.c)
 covertObj(
-    objects/ico-sphere.obj
-    objects/ico-sphere.dat
-)
-addBinaryFile(main icoSphere "${PROJECT_BINARY_DIR}/objects/ico-sphere.dat")
-covertObj(
-        objects/monkey.obj
-        objects/monkey.dat
-)
-addBinaryFile(main monkeyObj "${PROJECT_BINARY_DIR}/objects/monkey.dat")
-covertObj(
         objects/ship.obj
         objects/ship.dat
 )
 addBinaryFile(main playerShipObj "${PROJECT_BINARY_DIR}/objects/ship.dat")
+covertObj(
+        objects/bullet.obj
+        objects/bullet.dat
+)
+addBinaryFile(main bulletObj "${PROJECT_BINARY_DIR}/objects/bullet.dat")
