@@ -7,6 +7,7 @@
 
 extern const uint8_t playerShipObj[];
 extern const uint8_t bulletObj[];
+extern const uint8_t octahedronObj[];
 
 typedef struct {
     uint8_t type;

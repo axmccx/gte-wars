@@ -7,6 +7,7 @@
 #include "model.h"
 #include "world.h"
 #include "render.h"
+#include "rng.h"
 
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
@@ -40,9 +41,13 @@ int main(int argc, const char **argv) {
 
 		// Update world
 		world.frameCount++;
+		rng_mix(&controller_response, world.frameCount);
+
 		updatePlayer(&world, controller_response);
 		spawnBullets(&world, controller_response);
 		updateBullets(&world);
+		spawnEnemies(&world);
+		updateEnemies(&world);
 
 		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -70,7 +75,7 @@ int main(int argc, const char **argv) {
 		buildRenderPackets(chain, world.models.player, COLOR_CYAN);
 
 		for (int i = 0; i < MAX_BULLETS; i++) {
-			Bullet bullet = world.bullets[i];
+			const Bullet bullet = world.bullets[i];
 
 			if (bullet.alive) {
 				gte_setControlReg(GTE_TRX, bullet.x);
@@ -81,8 +86,25 @@ int main(int argc, const char **argv) {
 					  0, ONE,   0,
 					  0,   0, ONE
 				);
-				rotateCurrentMatrix(world.bullets[i].dir, 0, 0);
+				rotateCurrentMatrix(bullet.dir, 0, 0);
 				buildRenderPackets(chain, world.models.bullet, COLOR_YELLOW);
+			}
+		}
+
+		for (int i = 0; i < MAX_ENEMIES; i++) {
+			const Enemy enemy = world.enemies[i];
+
+			if (enemy.alive) {
+				gte_setControlReg(GTE_TRX, enemy.x);
+				gte_setControlReg(GTE_TRY, enemy.y);
+				gte_setControlReg(GTE_TRZ, 2400);
+				gte_setRotationMatrix(
+					ONE,   0,   0,
+					  0, ONE,   0,
+					  0,   0, ONE
+				);
+				rotateCurrentMatrix(0, enemy.rot, 0);
+				buildRenderPackets(chain, enemy.model, COLOR_MAGENTA);
 			}
 		}
 

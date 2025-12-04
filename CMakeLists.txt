@@ -28,6 +28,7 @@ add_library(
     src/world.c
     src/model.c
     src/render.c
+    src/rng.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)
 
@@ -49,3 +50,8 @@ covertObj(
         objects/bullet.dat
 )
 addBinaryFile(main bulletObj "${PROJECT_BINARY_DIR}/objects/bullet.dat")
+covertObj(
+        objects/octahedron.obj
+        objects/octahedron.dat
+)
+addBinaryFile(main octahedronObj "${PROJECT_BINARY_DIR}/objects/octahedron.dat")
