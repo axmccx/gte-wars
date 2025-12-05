@@ -50,6 +50,7 @@ int main(int argc, const char **argv) {
 		spawnBullets(&world, controller_response);
 		updateBullets(&world);
 		spawnEnemies(&world);
+		detectBulletEnemyCollisions(&world);
 		updateEnemies(&world);
 
 		// Prepare for next frame

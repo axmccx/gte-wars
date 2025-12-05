@@ -169,6 +169,34 @@ void spawnEnemies(World *world) {
     }
 }
 
+void detectBulletEnemyCollisions(World *world) {
+    for (int b = 0; b < MAX_BULLETS; b++) {
+        Bullet *bullet = &world->bullets[b];
+        if (!bullet->alive) continue;
+
+        const int s = isin(bullet->dir);
+        const int c = icos(bullet->dir);
+
+        const int tipX = bullet->x + ((c * BULLET_TIP_OFFSET) >> 12);
+        const int tipY = bullet->y + ((s * BULLET_TIP_OFFSET) >> 12);
+
+        for (int e = 0; e < MAX_ENEMIES; e++) {
+            Enemy *enemy = &world->enemies[e];
+            if (!enemy->alive) continue;
+
+            const int dx = enemy->x -tipX;
+            const int dz = enemy->y -tipY;
+
+            const int r = ENEMY_HIT_RADIUS;
+            if (dx*dx + dz*dz < r*r) {
+                enemy->alive = 0;
+                bullet->alive = 0;
+                break;
+            }
+        }
+    }
+}
+
 void updateEnemies(World *world) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         Enemy *enemy = &world->enemies[i];

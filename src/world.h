@@ -7,7 +7,9 @@
 #define MAX_BULLETS 30
 #define MAX_SPEED 30
 #define BULLET_SPEED 50
+#define BULLET_TIP_OFFSET 56
 #define ENEMY_SPEED 10
+#define ENEMY_HIT_RADIUS 80
 #define CAMERA_PAN_FACTOR 2560
 #define PLAYFIELD_HALF_WIDTH 2000
 #define PLAYFIELD_HALF_HEIGHT 1500
@@ -74,5 +76,7 @@ void spawnBullets(World *world, ControllerResponse controller_response);
 void updateBullets(World *world);
 
 void spawnEnemies(World *world);
+
+void detectBulletEnemyCollisions(World *world);
 
 void updateEnemies(World *world);
