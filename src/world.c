@@ -8,6 +8,8 @@ void worldInit(World *world) {
     world->frameCount = 0;
     world->nextFreeBullet = 0;
     world->nextFreeEnemy = 0;
+    world->camera.x = 0;
+    world->camera.y = 0;
     world->player.x = 0;
     world->player.y = 0;
     world->player.rot = 0;
@@ -46,56 +48,54 @@ void updatePlayer(World *world, const ControllerResponse controller_response) {
     const int dx = right ? 1 : (left ? -1 : 0);
     const int dy = down ? 1 : (up ? -1: 0);
 
-    world->player.x += dx * MAX_SPEED;
-    world->player.y += dy * MAX_SPEED;
-    world->player.rot += 32;
+    const uint8_t stick_x_raw = controller_response.left_joystick & 0xFF;
+    const uint8_t stick_y_raw = (controller_response.left_joystick >> 8) & 0xFF;
+    const int stick_x = stick_x_raw - 128;
+    const int stick_y = stick_y_raw - 128;
 
-    const int dir_angle = dpad_to_angle[dx+1][dy+1];
-    if (dir_angle >= 0) {
-        world->player.dir = dir_angle;
-    }
+    const int abs_x = (stick_x < 0) ? -stick_x : stick_x;
+    const int abs_y = (stick_y < 0) ? -stick_y : stick_y;
+    const int magnitude = abs_x + abs_y;
 
-    uint8_t stick_x_raw = controller_response.left_joystick & 0xFF;
-    uint8_t stick_y_raw = (controller_response.left_joystick >> 8) & 0xFF;
-
-    int8_t stick_x = (int8_t)(stick_x_raw - 128);
-    int8_t stick_y = (int8_t)(stick_y_raw - 128);
-
-    const int8_t DEADZONE = 64;
-
-    int abs_x = (stick_x < 0) ? -stick_x : stick_x;
-    int abs_y = (stick_y < 0) ? -stick_y : stick_y;
-    int magnitude = abs_x + abs_y;
-
-    if (magnitude > DEADZONE) {
+    if (magnitude > JOYSTICK_DEAD_ZONE) {
         world->player.x += (stick_x * MAX_SPEED) / 128;
         world->player.y += (stick_y * MAX_SPEED) / 128;
         world->player.dir = atan2(stick_y, stick_x);
+    } else {
+        world->player.x += dx * MAX_SPEED;
+        world->player.y += dy * MAX_SPEED;
+        world->player.rot += 32;
+
+        const int dir_angle = dpad_to_angle[dx+1][dy+1];
+        if (dir_angle >= 0) {
+            world->player.dir = dir_angle;
+        }
     }
+
+    clamp_axis(&world->player.x, PLAYFIELD_HALF_WIDTH - 100);
+    clamp_axis(&world->player.y, PLAYFIELD_HALF_HEIGHT - 100);
 }
 
 void spawnBullets(World *world, const ControllerResponse controller_response) {
-    uint8_t stick_x_raw = controller_response.right_joystick & 0xFF;
-    uint8_t stick_y_raw = (controller_response.right_joystick >> 8) & 0xFF;
+    const uint8_t stick_x_raw = controller_response.right_joystick & 0xFF;
+    const uint8_t stick_y_raw = (controller_response.right_joystick >> 8) & 0xFF;
 
-    int8_t stick_x = (int8_t)(stick_x_raw - 128);
-    int8_t stick_y = (int8_t)(stick_y_raw - 128);
+    const int stick_x = stick_x_raw - 128;
+    const int stick_y = stick_y_raw - 128;
 
-    const int8_t DEADZONE = 64;
+    const int abs_x = (stick_x < 0) ? -stick_x : stick_x;
+    const int abs_y = (stick_y < 0) ? -stick_y : stick_y;
+    const int magnitude = abs_x + abs_y;
 
-    int abs_x = (stick_x < 0) ? -stick_x : stick_x;
-    int abs_y = (stick_y < 0) ? -stick_y : stick_y;
-    int magnitude = abs_x + abs_y;
-
-    if (magnitude > DEADZONE && world->frameCount % 5 == 0) {
+    if (magnitude > JOYSTICK_DEAD_ZONE && world->frameCount % 5 == 0) {
         int vx = stick_x;
         int vy = stick_y;
         normalize_direction(&vx, &vy);
 
         const int BULLET_OFFSET = 80;
 
-        int spawn_x = world->player.x + ((vx * BULLET_OFFSET) >> 12);
-        int spawn_y = world->player.y + ((vy * BULLET_OFFSET) >> 12);
+        const int spawn_x = world->player.x + ((vx * BULLET_OFFSET) >> 12);
+        const int spawn_y = world->player.y + ((vy * BULLET_OFFSET) >> 12);
 
         const Bullet newBullet = {
             .x = spawn_x,
@@ -106,10 +106,10 @@ void spawnBullets(World *world, const ControllerResponse controller_response) {
             .alive = 1,
         };
 
-        int start = world->nextFreeBullet;
+        const int start = world->nextFreeBullet;
 
         for (int i = 0; i < MAX_BULLETS; i++) {
-            int idx = (start + i) % MAX_BULLETS;
+            const int idx = (start + i) % MAX_BULLETS;
 
             if (!world->bullets[idx].alive) {
                 world->nextFreeBullet = (idx + 1) % MAX_BULLETS;
@@ -126,7 +126,10 @@ void updateBullets(World *world) {
 
         if (!bullet->alive) continue;
 
-        if (abs(bullet->x) > 1500 || abs(bullet->y) > 1500) {
+        const int off_x = limit_axis(&bullet->x, PLAYFIELD_HALF_WIDTH - 100);
+        const int off_y = limit_axis(&bullet->y, PLAYFIELD_HALF_HEIGHT - 100);
+
+        if (off_x || off_y) {
             bullet->alive = 0;
             continue;
         }
@@ -144,8 +147,8 @@ void spawnEnemies(World *world) {
     normalize_direction(&vx, &vy);
 
     const Enemy newEnemy = {
-        .x = rand_range(-1000, 1000),
-        .y = rand_range(-1000, 1000),
+        .x = rand_range(-(PLAYFIELD_HALF_WIDTH - 500), PLAYFIELD_HALF_WIDTH - 500),
+        .y = rand_range(-(PLAYFIELD_HALF_HEIGHT - 500), PLAYFIELD_HALF_HEIGHT - 500),
         .rot = 0,
         .vx = vx,
         .vy = vy,
@@ -153,10 +156,10 @@ void spawnEnemies(World *world) {
         .model = world->models.enemy,
     };
 
-    int start = world->nextFreeEnemy;
+    const int start = world->nextFreeEnemy;
 
     for (int i = 0; i < MAX_ENEMIES; i++) {
-        int idx = (start + i) % MAX_ENEMIES;
+        const int idx = (start + i) % MAX_ENEMIES;
 
         if (!world->enemies[idx].alive) {
             world->nextFreeEnemy = (idx + 1) % MAX_ENEMIES;
@@ -172,13 +175,10 @@ void updateEnemies(World *world) {
 
         if (!enemy->alive) continue;
 
-        if (abs(enemy->x) > 1500 || abs(enemy->y) > 1500) {
-            enemy->alive = 0;
-            continue;
-        }
-
         enemy->x += (enemy->vx * ENEMY_SPEED) >> 12;
         enemy->y += (enemy->vy * ENEMY_SPEED) >> 12;
+        bounce_axis(&enemy->x, &enemy->vx, PLAYFIELD_HALF_WIDTH  - 64);
+        bounce_axis(&enemy->y, &enemy->vy, PLAYFIELD_HALF_HEIGHT - 64);
         enemy->rot += 32;
     }
 }

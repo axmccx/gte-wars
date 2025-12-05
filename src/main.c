@@ -44,6 +44,9 @@ int main(int argc, const char **argv) {
 		rng_mix(&controller_response, world.frameCount);
 
 		updatePlayer(&world, controller_response);
+		world.camera.x = (world.player.x * CAMERA_PAN_FACTOR) >> 12;
+		world.camera.y = (world.player.y * CAMERA_PAN_FACTOR) >> 12;
+
 		spawnBullets(&world, controller_response);
 		updateBullets(&world);
 		spawnEnemies(&world);
@@ -61,11 +64,12 @@ int main(int argc, const char **argv) {
 		clearOrderingTable(chain->orderingTable, ORDERING_TABLE_SIZE);
 		chain->nextPacket = chain->data;
 		initOrderingChain(chain, bufferX, bufferY);
+		buildPlayfieldBorder(chain, world.camera);
 
 		// Build packet chain
-		gte_setControlReg(GTE_TRX, world.player.x);
-		gte_setControlReg(GTE_TRY, world.player.y);
-		gte_setControlReg(GTE_TRZ, 2400);
+		gte_setControlReg(GTE_TRX, world.player.x - world.camera.x);
+		gte_setControlReg(GTE_TRY, world.player.y - world.camera.y);
+		gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
 		gte_setRotationMatrix(
 			ONE,   0,   0,
 			  0, ONE,   0,
@@ -75,36 +79,36 @@ int main(int argc, const char **argv) {
 		buildRenderPackets(chain, world.models.player, COLOR_CYAN);
 
 		for (int i = 0; i < MAX_BULLETS; i++) {
-			const Bullet bullet = world.bullets[i];
+			const Bullet *bullet = &world.bullets[i];
 
-			if (bullet.alive) {
-				gte_setControlReg(GTE_TRX, bullet.x);
-				gte_setControlReg(GTE_TRY, bullet.y);
-				gte_setControlReg(GTE_TRZ, 2400);
+			if (bullet->alive) {
+				gte_setControlReg(GTE_TRX, bullet->x - world.camera.x);
+				gte_setControlReg(GTE_TRY, bullet->y - world.camera.y);
+				gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
 				gte_setRotationMatrix(
 					ONE,   0,   0,
 					  0, ONE,   0,
 					  0,   0, ONE
 				);
-				rotateCurrentMatrix(bullet.dir, 0, 0);
+				rotateCurrentMatrix(bullet->dir, 0, 0);
 				buildRenderPackets(chain, world.models.bullet, COLOR_YELLOW);
 			}
 		}
 
 		for (int i = 0; i < MAX_ENEMIES; i++) {
-			const Enemy enemy = world.enemies[i];
+			const Enemy *enemy = &world.enemies[i];
 
-			if (enemy.alive) {
-				gte_setControlReg(GTE_TRX, enemy.x);
-				gte_setControlReg(GTE_TRY, enemy.y);
-				gte_setControlReg(GTE_TRZ, 2400);
+			if (enemy->alive) {
+				gte_setControlReg(GTE_TRX, enemy->x - world.camera.x);
+				gte_setControlReg(GTE_TRY, enemy->y - world.camera.y);
+				gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
 				gte_setRotationMatrix(
 					ONE,   0,   0,
 					  0, ONE,   0,
 					  0,   0, ONE
 				);
-				rotateCurrentMatrix(0, enemy.rot, 0);
-				buildRenderPackets(chain, enemy.model, COLOR_MAGENTA);
+				rotateCurrentMatrix(0, enemy->rot, 0);
+				buildRenderPackets(chain, enemy->model, COLOR_MAGENTA);
 			}
 		}
 
