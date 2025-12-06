@@ -132,7 +132,7 @@ int main(int argc, const char **argv) {
 		char buffer[32];
 
 		snprintf(buffer, sizeof(buffer), "Score: %d", world.score);
-		printString(chain, &font,4,4, buffer);
+		printString(chain, &font, 4, 4, buffer);
 
 		// Render frame
 		waitForGP0Ready();

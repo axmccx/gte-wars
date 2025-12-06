@@ -133,6 +133,9 @@ void printString(
 
 	uint32_t *ptr;
 
+	ptr = allocatePacket(chain, 1, 1);
+	ptr[0] = gp0_texpage(font->page, false, false);
+
 	for (; *str; str++) {
 		char ch = *str;
 
@@ -158,12 +161,11 @@ void printString(
 
 		const SpriteInfo *sprite = &fontSprites[ch - FONT_FIRST_TABLE_CHAR];
 
-		ptr = allocatePacket(chain, 0, 5);
-		ptr[0] = gp0_texpage(font->page, false, false);
-		ptr[1] = gp0_rectangle(true, true, true);
-		ptr[2] = gp0_xy(currentX, currentY);
-		ptr[3] = gp0_uv(font->u + sprite->x, font->v + sprite->y, font->clut);
-		ptr[4] = gp0_xy(sprite->width, sprite->height);
+		ptr = allocatePacket(chain, 0, 4);
+		ptr[0] = gp0_rectangle(true, true, true);
+		ptr[1] = gp0_xy(currentX, currentY);
+		ptr[2] = gp0_uv(font->u + sprite->x, font->v + sprite->y, font->clut);
+		ptr[3] = gp0_xy(sprite->width, sprite->height);
 
 		currentX += sprite->width;
 	}
