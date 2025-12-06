@@ -23,6 +23,7 @@ typedef struct {
     int frameCount;
     int nextFreeBullet;
     int nextFreeEnemy;
+    int score;
     Camera camera;
     Player player;
     Bullet bullets[MAX_BULLETS];

@@ -29,6 +29,7 @@ add_library(
     src/model.c
     src/render.c
     src/rng.c
+    src/font.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)
 
@@ -55,3 +56,10 @@ covertObj(
         objects/octahedron.dat
 )
 addBinaryFile(main octahedronObj "${PROJECT_BINARY_DIR}/objects/octahedron.dat")
+convertImage(
+        textures/font.png 4
+        objects/fontTexture.dat
+        objects/fontPalette.dat
+)
+addBinaryFile(main fontTexture "${PROJECT_BINARY_DIR}/objects/fontTexture.dat")
+addBinaryFile(main fontPalette "${PROJECT_BINARY_DIR}/objects/fontPalette.dat")

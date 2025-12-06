@@ -8,6 +8,7 @@
 #include "world.h"
 #include "render.h"
 #include "rng.h"
+#include "font.h"
 
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
@@ -29,6 +30,21 @@ int main(int argc, const char **argv) {
 
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 	GPU_GP1 = gp1_dispBlank(false);
+
+	TextureInfo font;
+
+	uploadIndexedTexture(
+		&font,
+		fontTexture,
+		fontPalette,
+		SCREEN_WIDTH * 2,
+		0,
+		SCREEN_WIDTH * 2,
+		FONT_HEIGHT,
+		FONT_WIDTH,
+		FONT_HEIGHT,
+		FONT_COLOR_DEPTH
+	);
 
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
@@ -112,6 +128,11 @@ int main(int argc, const char **argv) {
 				buildRenderPackets(chain, enemy->model, COLOR_MAGENTA);
 			}
 		}
+
+		char buffer[32];
+
+		snprintf(buffer, sizeof(buffer), "Score: %d", world.score);
+		printString(chain, &font,4,4, buffer);
 
 		// Render frame
 		waitForGP0Ready();

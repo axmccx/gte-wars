@@ -8,6 +8,7 @@ void worldInit(World *world) {
     world->frameCount = 0;
     world->nextFreeBullet = 0;
     world->nextFreeEnemy = 0;
+    world->score = 0;
     world->camera.x = 0;
     world->camera.y = 0;
     world->player.x = 0;
@@ -191,6 +192,7 @@ void detectBulletEnemyCollisions(World *world) {
             if (dx*dx + dz*dz < r*r) {
                 enemy->alive = 0;
                 bullet->alive = 0;
+                world->score += 25;
                 break;
             }
         }
