@@ -8,6 +8,7 @@ void worldInit(World *world) {
     world->frameCount = 0;
     world->nextFreeBullet = 0;
     world->nextFreeEnemy = 0;
+    world->polycount = 0;
     world->score = 0;
     world->camera.x = 0;
     world->camera.y = 0;
@@ -65,7 +66,6 @@ void updatePlayer(World *world, const ControllerResponse controller_response) {
     } else {
         world->player.x += dx * MAX_SPEED;
         world->player.y += dy * MAX_SPEED;
-        world->player.rot += 32;
 
         const int dir_angle = dpad_to_angle[dx+1][dy+1];
         if (dir_angle >= 0) {
@@ -75,6 +75,7 @@ void updatePlayer(World *world, const ControllerResponse controller_response) {
 
     clamp_axis(&world->player.x, PLAYFIELD_HALF_WIDTH - 100);
     clamp_axis(&world->player.y, PLAYFIELD_HALF_HEIGHT - 100);
+    world->player.rot += 32;
 }
 
 void spawnBullets(World *world, const ControllerResponse controller_response) {
@@ -141,7 +142,7 @@ void updateBullets(World *world) {
 }
 
 void spawnEnemies(World *world) {
-    if (world->frameCount % 50 != 0) return;
+    if (world->frameCount % 20 != 0) return;
 
     int vx = rand_range(-128, 128);
     int vy = rand_range(-128, 128);

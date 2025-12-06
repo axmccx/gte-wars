@@ -3,7 +3,7 @@
 #include "controller.h"
 #include "model.h"
 
-#define MAX_ENEMIES 20
+#define MAX_ENEMIES 50
 #define MAX_BULLETS 30
 #define MAX_SPEED 30
 #define BULLET_SPEED 50
@@ -24,6 +24,7 @@ typedef struct {
     int nextFreeBullet;
     int nextFreeEnemy;
     int score;
+    int polycount;
     Camera camera;
     Player player;
     Bullet bullets[MAX_BULLETS];

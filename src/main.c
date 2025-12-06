@@ -82,6 +82,7 @@ int main(int argc, const char **argv) {
 		chain->nextPacket = chain->data;
 		initOrderingChain(chain, bufferX, bufferY);
 		buildPlayfieldBorder(chain, world.camera);
+		world.polycount = 0;
 
 		// Build packet chain
 		gte_setControlReg(GTE_TRX, world.player.x - world.camera.x);
@@ -94,6 +95,7 @@ int main(int argc, const char **argv) {
 		);
 		rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
 		buildRenderPackets(chain, world.models.player, COLOR_CYAN);
+		world.polycount += world.models.player->facesCount;
 
 		for (int i = 0; i < MAX_BULLETS; i++) {
 			const Bullet *bullet = &world.bullets[i];
@@ -109,6 +111,7 @@ int main(int argc, const char **argv) {
 				);
 				rotateCurrentMatrix(bullet->dir, 0, 0);
 				buildRenderPackets(chain, world.models.bullet, COLOR_YELLOW);
+				world.polycount += world.models.bullet->facesCount;
 			}
 		}
 
@@ -126,13 +129,16 @@ int main(int argc, const char **argv) {
 				);
 				rotateCurrentMatrix(0, enemy->rot, 0);
 				buildRenderPackets(chain, enemy->model, COLOR_MAGENTA);
+				world.polycount += enemy->model->facesCount;
 			}
 		}
 
 		char buffer[32];
-
 		snprintf(buffer, sizeof(buffer), "Score: %d", world.score);
 		printString(chain, &font, 4, 4, buffer);
+
+		snprintf(buffer, sizeof(buffer), "Poly: %d", world.polycount);
+		printString(chain, &font, 4, 16, buffer);
 
 		// Render frame
 		waitForGP0Ready();
