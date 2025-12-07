@@ -8,14 +8,16 @@ void worldInit(World *world) {
     world->frameCount = 0;
     world->nextFreeBullet = 0;
     world->nextFreeEnemy = 0;
-    world->polycount = 0;
     world->score = 0;
+    world->lives = 3;
+    world->polycount = 0;
     world->camera.x = 0;
     world->camera.y = 0;
     world->player.x = 0;
     world->player.y = 0;
     world->player.rot = 0;
     world->player.dir = 0;
+    world->player.alive = 1;
 
     for (int i = 0; i < MAX_BULLETS; i++) {
         world->bullets[i].alive = 0;
@@ -42,6 +44,16 @@ static const int dpad_to_angle[3][3] = {
 };
 
 void updatePlayer(World *world, const ControllerResponse controller_response) {
+    if (!world->player.alive) {
+        if (world->respawnTimer > 0) {
+            world->respawnTimer--;
+        } else if (world->lives > 0) {
+            world->lives--;
+            world->player.alive = 1;
+        }
+        return;
+    }
+
     const bool right = (controller_response.buttons & BUTTON_RIGHT) != 0;
     const bool left = (controller_response.buttons & BUTTON_LEFT) != 0;
     const bool down = (controller_response.buttons & BUTTON_DOWN) != 0;
@@ -76,6 +88,26 @@ void updatePlayer(World *world, const ControllerResponse controller_response) {
     clamp_axis(&world->player.x, PLAYFIELD_HALF_WIDTH - 100);
     clamp_axis(&world->player.y, PLAYFIELD_HALF_HEIGHT - 100);
     world->player.rot += 32;
+}
+
+void detectPlayerEnemyCollisions(World *world) {
+    Player *player = &world->player;
+    const int r = ENEMY_HIT_RADIUS + PLAYER_HIT_RADIUS;
+
+    for (int e = 0; e < MAX_ENEMIES; e++) {
+        Enemy *enemy = &world->enemies[e];
+        if (!enemy->alive) continue;
+
+        const int dx = enemy->x - player->x;
+        const int dz = enemy->y - player->y;
+
+        if (dx*dx + dz*dz < r*r) {
+            enemy->alive = 0;
+            player->alive = 0;
+            world->respawnTimer = 50;
+            break;
+        }
+    }
 }
 
 void spawnBullets(World *world, const ControllerResponse controller_response) {

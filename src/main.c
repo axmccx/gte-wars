@@ -63,7 +63,10 @@ int main(int argc, const char **argv) {
 		world.camera.x = (world.player.x * CAMERA_PAN_FACTOR) >> 12;
 		world.camera.y = (world.player.y * CAMERA_PAN_FACTOR) >> 12;
 
-		spawnBullets(&world, controller_response);
+		if (world.player.alive) {
+			detectPlayerEnemyCollisions(&world);
+			spawnBullets(&world, controller_response);
+		}
 		updateBullets(&world);
 		spawnEnemies(&world);
 		detectBulletEnemyCollisions(&world);
@@ -85,17 +88,26 @@ int main(int argc, const char **argv) {
 		world.polycount = 0;
 
 		// Build packet chain
-		gte_setControlReg(GTE_TRX, world.player.x - world.camera.x);
-		gte_setControlReg(GTE_TRY, world.player.y - world.camera.y);
-		gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
-		gte_setRotationMatrix(
-			ONE,   0,   0,
-			  0, ONE,   0,
-			  0,   0, ONE
-		);
-		rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
-		buildRenderPackets(chain, world.models.player, COLOR_CYAN);
-		world.polycount += world.models.player->facesCount;
+		if (world.player.alive) {
+			gte_setControlReg(GTE_TRX, world.player.x - world.camera.x);
+			gte_setControlReg(GTE_TRY, world.player.y - world.camera.y);
+			gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
+			gte_setRotationMatrix(
+				ONE,   0,   0,
+				  0, ONE,   0,
+				  0,   0, ONE
+			);
+			rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
+			buildRenderPackets(chain, world.models.player, COLOR_CYAN);
+			world.polycount += world.models.player->facesCount;
+		} else if (world.lives == 0 && !world.player.alive) {
+			printString(chain, &font, (SCREEN_WIDTH/2)-26, SCREEN_HEIGHT/2, "GAME OVER");
+
+			const bool x_button = (controller_response.buttons & BUTTON_CROSS) != 0;
+			if (x_button) {
+				worldInit(&world);
+			}
+		}
 
 		for (int i = 0; i < MAX_BULLETS; i++) {
 			const Bullet *bullet = &world.bullets[i];
@@ -139,6 +151,9 @@ int main(int argc, const char **argv) {
 
 		snprintf(buffer, sizeof(buffer), "Poly: %d", world.polycount);
 		printString(chain, &font, 4, 16, buffer);
+
+		snprintf(buffer, sizeof(buffer), "Lives: %d", world.lives);
+		printString(chain, &font, SCREEN_WIDTH-42, 4, buffer);
 
 		// Render frame
 		waitForGP0Ready();

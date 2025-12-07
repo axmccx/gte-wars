@@ -6,6 +6,7 @@
 #define MAX_ENEMIES 50
 #define MAX_BULLETS 30
 #define MAX_SPEED 30
+#define PLAYER_HIT_RADIUS 12
 #define BULLET_SPEED 50
 #define BULLET_TIP_OFFSET 56
 #define ENEMY_SPEED 10
@@ -24,6 +25,8 @@ typedef struct {
     int nextFreeBullet;
     int nextFreeEnemy;
     int score;
+    int lives;
+    int respawnTimer;
     int polycount;
     Camera camera;
     Player player;
@@ -72,6 +75,8 @@ static inline void bounce_axis(int *pos, int *vel, const int limit) {
 void worldInit(World *world);
 
 void updatePlayer(World *world, ControllerResponse controller_response);
+
+void detectPlayerEnemyCollisions(World *world);
 
 void spawnBullets(World *world, ControllerResponse controller_response);
 

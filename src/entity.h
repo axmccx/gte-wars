@@ -2,7 +2,7 @@
 #include "model.h"
 
 typedef struct {
-    int x, y, rot, dir;
+    int x, y, rot, dir, alive;
 } Player;
 
 typedef struct {
