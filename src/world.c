@@ -40,8 +40,11 @@ void worldInit(World *world) {
     world->models.enemy = malloc(sizeof *world->models.enemy);
     loadObjModel(world->models.enemy, octahedronObj);
 
-    world->models.particle = malloc(sizeof *world->models.particle);
-    generateParticle(world->models.particle);
+    world->models.smallParticle = malloc(sizeof *world->models.smallParticle);
+    generateParticle(world->models.smallParticle, SMALL_PARTICLE);
+
+    world->models.largeParticle = malloc(sizeof *world->models.largeParticle);
+    generateParticle(world->models.largeParticle, LARGE_PARTICLE);
 }
 
 static const int dpad_to_angle[3][3] = {
@@ -112,6 +115,9 @@ void detectPlayerEnemyCollisions(World *world) {
             enemy->alive = 0;
             player->alive = 0;
             world->respawnTimer = 50;
+            spawnParticles(world, LARGE_PARTICLE, 60, 16, enemy->x, enemy->y);
+            spawnParticles(world, LARGE_PARTICLE, 30, 32, enemy->x, enemy->y);
+            spawnParticles(world, LARGE_PARTICLE, 20, 64, enemy->x, enemy->y);
             break;
         }
     }
@@ -210,7 +216,15 @@ void spawnEnemies(World *world) {
     }
 }
 
-void spawnParticles(World *world, int count, int speedSeed, int spawnX, int spawnY) {
+static ObjModel* getParticleModel(const Models* m, ParticleType k) {
+    switch (k) {
+        case SMALL_PARTICLE: return m->smallParticle;
+        case LARGE_PARTICLE:  return m->largeParticle;
+    }
+    return m->smallParticle;
+}
+
+void spawnParticles(World *world, ParticleType type, int count, int speedSeed, int spawnX, int spawnY) {
     for (int i = 0; i < count; i++) {
         int vx = rand_range(-128, 128);
         int vy = rand_range(-128, 128);
@@ -223,6 +237,7 @@ void spawnParticles(World *world, int count, int speedSeed, int spawnX, int spaw
             .vx = (vx * speed) >> 12,
             .vy = (vy * speed) >> 12,
             .lifetime = 25,
+            .model = getParticleModel(&world->models, type),
         };
 
         const int start = world->nextFreeParticle;
@@ -262,8 +277,8 @@ void detectBulletEnemyCollisions(World *world) {
                 enemy->alive = 0;
                 bullet->alive = 0;
                 world->score += 25;
-                spawnParticles(world, 20, 16, enemy->x, enemy->y);
-                spawnParticles(world, 10, 32, enemy->x, enemy->y);
+                spawnParticles(world, SMALL_PARTICLE, 20, 16, enemy->x, enemy->y);
+                spawnParticles(world, SMALL_PARTICLE, 10, 32, enemy->x, enemy->y);
                 break;
             }
         }

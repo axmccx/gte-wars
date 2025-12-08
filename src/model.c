@@ -71,13 +71,12 @@ void loadObjModel(ObjModel *obj_model, const uint8_t *data) {
     }
 }
 
-void generateParticle(ObjModel *obj_model) {
+void generateParticle(ObjModel *obj_model, const ParticleType type) {
     obj_model->vertexCount = 3;
     obj_model->facesCount = 1;
     obj_model->vertices = malloc(3 * sizeof(GTEVector16));
 
-    const int size = 50;
-    const int half = size / 2;
+    const int half = (int)type / 2;
 
     obj_model->vertices[0].x = (int16_t)0;
     obj_model->vertices[0].y = (int16_t)(-half);

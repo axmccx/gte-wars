@@ -25,9 +25,33 @@ typedef struct {
     ObjModel *player;
     ObjModel *bullet;
     ObjModel *enemy;
-    ObjModel *particle;
+    ObjModel *smallParticle;
+    ObjModel *largeParticle;
 } Models;
+
+typedef struct {
+    int x, y, rot, dir, alive;
+} Player;
+
+typedef struct {
+    int x, y, vx, vy, dir, alive;
+} Bullet;
+
+typedef struct {
+    int x, y, rot, vx, vy, alive;
+    ObjModel *model;
+} Enemy;
+
+typedef struct {
+    int x, y, vx, vy, lifetime;
+    ObjModel *model;
+} Particle;
+
+typedef enum {
+    SMALL_PARTICLE = 50,
+    LARGE_PARTICLE = 80,
+} ParticleType;
 
 void loadObjModel(ObjModel *obj_model, const uint8_t *data);
 
-void generateParticle(ObjModel *obj_model);
+void generateParticle(ObjModel *obj_model, ParticleType type);

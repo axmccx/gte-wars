@@ -110,8 +110,8 @@ int main(int argc, const char **argv) {
 				worldInit(&world);
 			}
 			if (world.frameCount % 50 == 0) {
-				spawnParticles(&world, 40, 16, world.camera.x, world.camera.y);
-				spawnParticles(&world, 20, 32, world.camera.x, world.camera.y);
+				spawnParticles(&world, SMALL_PARTICLE, 40, 16, world.camera.x, world.camera.y);
+				spawnParticles(&world, SMALL_PARTICLE, 20, 32, world.camera.x, world.camera.y);
 			}
 		}
 
@@ -164,8 +164,8 @@ int main(int argc, const char **argv) {
 					  0,   0, ONE
 				);
 				// rotateCurrentMatrix(0, enemy->rot, 0);
-				buildRenderPackets(chain, world.models.particle, COLOR_RED);
-				world.polycount += world.models.particle->facesCount;
+				buildRenderPackets(chain, particle->model, COLOR_RED);
+				world.polycount += particle->model->facesCount;
 			}
 		}
 
