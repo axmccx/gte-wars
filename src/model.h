@@ -25,6 +25,9 @@ typedef struct {
     ObjModel *player;
     ObjModel *bullet;
     ObjModel *enemy;
+    ObjModel *particle;
 } Models;
 
 void loadObjModel(ObjModel *obj_model, const uint8_t *data);
+
+void generateParticle(ObjModel *obj_model);

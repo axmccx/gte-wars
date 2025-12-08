@@ -71,6 +71,7 @@ int main(int argc, const char **argv) {
 		spawnEnemies(&world);
 		detectBulletEnemyCollisions(&world);
 		updateEnemies(&world);
+		updateParticles(&world);
 
 		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -102,10 +103,15 @@ int main(int argc, const char **argv) {
 			world.polycount += world.models.player->facesCount;
 		} else if (world.lives == 0 && !world.player.alive) {
 			printString(chain, &font, (SCREEN_WIDTH/2)-26, SCREEN_HEIGHT/2, "GAME OVER");
+			printString(chain, &font, (SCREEN_WIDTH/2)-50, (SCREEN_HEIGHT/2) + 16, "Press X to restart");
 
 			const bool x_button = (controller_response.buttons & BUTTON_CROSS) != 0;
 			if (x_button) {
 				worldInit(&world);
+			}
+			if (world.frameCount % 50 == 0) {
+				spawnParticles(&world, 40, 16, world.camera.x, world.camera.y);
+				spawnParticles(&world, 20, 32, world.camera.x, world.camera.y);
 			}
 		}
 
@@ -142,6 +148,24 @@ int main(int argc, const char **argv) {
 				rotateCurrentMatrix(0, enemy->rot, 0);
 				buildRenderPackets(chain, enemy->model, COLOR_MAGENTA);
 				world.polycount += enemy->model->facesCount;
+			}
+		}
+
+		for (int i = 0; i < MAX_PARTICLES; i++) {
+			const Particle *particle = &world.particles[i];
+
+			if (particle->lifetime > 0) {
+				gte_setControlReg(GTE_TRX, particle->x - world.camera.x);
+				gte_setControlReg(GTE_TRY, particle->y - world.camera.y);
+				gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
+				gte_setRotationMatrix(
+					ONE,   0,   0,
+					  0, ONE,   0,
+					  0,   0, ONE
+				);
+				// rotateCurrentMatrix(0, enemy->rot, 0);
+				buildRenderPackets(chain, world.models.particle, COLOR_RED);
+				world.polycount += world.models.particle->facesCount;
 			}
 		}
 

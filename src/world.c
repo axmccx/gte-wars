@@ -27,6 +27,10 @@ void worldInit(World *world) {
         world->enemies[i].alive = 0;
     }
 
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        world->particles[i].lifetime = 0;
+    }
+
     world->models.player = malloc(sizeof *world->models.player);
     loadObjModel(world->models.player, playerShipObj);
 
@@ -35,6 +39,9 @@ void worldInit(World *world) {
 
     world->models.enemy = malloc(sizeof *world->models.enemy);
     loadObjModel(world->models.enemy, octahedronObj);
+
+    world->models.particle = malloc(sizeof *world->models.particle);
+    generateParticle(world->models.particle);
 }
 
 static const int dpad_to_angle[3][3] = {
@@ -72,12 +79,12 @@ void updatePlayer(World *world, const ControllerResponse controller_response) {
     const int magnitude = abs_x + abs_y;
 
     if (magnitude > JOYSTICK_DEAD_ZONE) {
-        world->player.x += (stick_x * MAX_SPEED) / 128;
-        world->player.y += (stick_y * MAX_SPEED) / 128;
+        world->player.x += (stick_x * MAX_PLAYER_SPEED) / 128;
+        world->player.y += (stick_y * MAX_PLAYER_SPEED) / 128;
         world->player.dir = atan2(stick_y, stick_x);
     } else {
-        world->player.x += dx * MAX_SPEED;
-        world->player.y += dy * MAX_SPEED;
+        world->player.x += dx * MAX_PLAYER_SPEED;
+        world->player.y += dy * MAX_PLAYER_SPEED;
 
         const int dir_angle = dpad_to_angle[dx+1][dy+1];
         if (dir_angle >= 0) {
@@ -203,6 +210,35 @@ void spawnEnemies(World *world) {
     }
 }
 
+void spawnParticles(World *world, int count, int speedSeed, int spawnX, int spawnY) {
+    for (int i = 0; i < count; i++) {
+        int vx = rand_range(-128, 128);
+        int vy = rand_range(-128, 128);
+        normalize_direction(&vx, &vy);
+        int speed = rand_range(speedSeed/2, speedSeed*2);
+
+        const Particle newParticle = {
+            .x = rand_range(spawnX - 10, spawnX + 10),
+            .y = rand_range(spawnY - 10, spawnY + 10),
+            .vx = (vx * speed) >> 12,
+            .vy = (vy * speed) >> 12,
+            .lifetime = 25,
+        };
+
+        const int start = world->nextFreeParticle;
+
+        for (int j = 0; j < MAX_PARTICLES; j++) {
+            const int idx = (start + j) % MAX_PARTICLES;
+
+            if (world->particles[idx].lifetime == 0) {
+                world->nextFreeParticle = (idx + 1) % MAX_PARTICLES;
+                world->particles[idx] = newParticle;
+                break;
+            }
+        }
+    }
+}
+
 void detectBulletEnemyCollisions(World *world) {
     for (int b = 0; b < MAX_BULLETS; b++) {
         Bullet *bullet = &world->bullets[b];
@@ -226,6 +262,8 @@ void detectBulletEnemyCollisions(World *world) {
                 enemy->alive = 0;
                 bullet->alive = 0;
                 world->score += 25;
+                spawnParticles(world, 20, 16, enemy->x, enemy->y);
+                spawnParticles(world, 10, 32, enemy->x, enemy->y);
                 break;
             }
         }
@@ -243,5 +281,17 @@ void updateEnemies(World *world) {
         bounce_axis(&enemy->x, &enemy->vx, PLAYFIELD_HALF_WIDTH  - 64);
         bounce_axis(&enemy->y, &enemy->vy, PLAYFIELD_HALF_HEIGHT - 64);
         enemy->rot += 32;
+    }
+}
+
+void updateParticles(World *world) {
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        Particle *particle = &world->particles[i];
+
+        if (particle->lifetime == 0) continue;
+
+        particle->x += particle->vx;
+        particle->y += particle->vy;
+        particle->lifetime--;
     }
 }

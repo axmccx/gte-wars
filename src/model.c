@@ -70,3 +70,31 @@ void loadObjModel(ObjModel *obj_model, const uint8_t *data) {
         }
     }
 }
+
+void generateParticle(ObjModel *obj_model) {
+    obj_model->vertexCount = 3;
+    obj_model->facesCount = 1;
+    obj_model->vertices = malloc(3 * sizeof(GTEVector16));
+
+    const int size = 50;
+    const int half = size / 2;
+
+    obj_model->vertices[0].x = (int16_t)0;
+    obj_model->vertices[0].y = (int16_t)(-half);
+    obj_model->vertices[0].z = (int16_t)0;
+
+    obj_model->vertices[1].x = (int16_t)(-half);
+    obj_model->vertices[1].y = (int16_t)half;
+    obj_model->vertices[1].z = 0;
+
+    obj_model->vertices[2].x = (int16_t)half;
+    obj_model->vertices[2].y = (int16_t)half;
+    obj_model->vertices[2].z = 0;
+
+    obj_model->faces = malloc(sizeof(Face));
+    Face *face = obj_model->faces;
+    face->type = TRI;
+    face->i1 = 0;
+    face->i2 = 1;
+    face->i3 = 2;
+}

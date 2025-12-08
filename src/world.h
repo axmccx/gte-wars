@@ -5,7 +5,8 @@
 
 #define MAX_ENEMIES 50
 #define MAX_BULLETS 30
-#define MAX_SPEED 30
+#define MAX_PARTICLES 100
+#define MAX_PLAYER_SPEED 30
 #define PLAYER_HIT_RADIUS 12
 #define BULLET_SPEED 50
 #define BULLET_TIP_OFFSET 56
@@ -24,15 +25,17 @@ typedef struct {
     int frameCount;
     int nextFreeBullet;
     int nextFreeEnemy;
+    int nextFreeParticle;
     int score;
     int lives;
     int respawnTimer;
     int polycount;
     Camera camera;
+    Models models;
     Player player;
     Bullet bullets[MAX_BULLETS];
     Enemy enemies[MAX_ENEMIES];
-    Models models;
+    Particle particles[MAX_PARTICLES];
 } World;
 
 static inline void normalize_direction(int *vx, int *vy) {
@@ -84,6 +87,10 @@ void updateBullets(World *world);
 
 void spawnEnemies(World *world);
 
+void spawnParticles(World *world, int count, int speedSeed, int spawnX, int spawnY);
+
 void detectBulletEnemyCollisions(World *world);
 
 void updateEnemies(World *world);
+
+void updateParticles(World *world);
