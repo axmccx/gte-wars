@@ -234,6 +234,10 @@ void spawnParticles(World *world, ParticleType type, int count, int speedSeed, i
         const Particle newParticle = {
             .x = rand_range(spawnX - 10, spawnX + 10),
             .y = rand_range(spawnY - 10, spawnY + 10),
+            .rx = rand_range(0, 4095),
+            .ry = rand_range(0, 4095),
+            .rz = rand_range(0, 4095),
+            .rdx = rand_range(32, 128),
             .vx = (vx * speed) >> 12,
             .vy = (vy * speed) >> 12,
             .lifetime = 25,
@@ -307,6 +311,9 @@ void updateParticles(World *world) {
 
         particle->x += particle->vx;
         particle->y += particle->vy;
+        particle->rx += particle->rdx;
+        particle->ry += particle->rdx;
+        particle->rz += particle->rdx;
         particle->lifetime--;
     }
 }

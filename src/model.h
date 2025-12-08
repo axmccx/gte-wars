@@ -43,7 +43,7 @@ typedef struct {
 } Enemy;
 
 typedef struct {
-    int x, y, vx, vy, lifetime;
+    int x, y, rx, ry, rz, rdx, vx, vy, lifetime;
     ObjModel *model;
 } Particle;
 

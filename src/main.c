@@ -163,7 +163,7 @@ int main(int argc, const char **argv) {
 					  0, ONE,   0,
 					  0,   0, ONE
 				);
-				// rotateCurrentMatrix(0, enemy->rot, 0);
+				rotateCurrentMatrix(particle->rx, particle->ry, particle->rz);
 				buildRenderPackets(chain, particle->model, COLOR_RED);
 				world.polycount += particle->model->facesCount;
 			}
