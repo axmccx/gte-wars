@@ -54,26 +54,26 @@ void buildPlayfieldBorder(DMAChain *chain, const Camera camera) {
     ptr[6] = 0x55555555;
 }
 
-void buildRenderPackets(DMAChain *chain, const ObjModel *modelToRender, const uint32_t color) {
+void buildRenderPackets(DMAChain *chain, const ObjModel *modelToRender) {
     uint32_t *ptr;
 
     for (int i = 0; i < modelToRender->facesCount; i++) {
-        const Face face = modelToRender->faces[i];
+        const Face *face = &modelToRender->faces[i];
 
-        gte_loadV0(&modelToRender->vertices[face.i1]);
-        gte_loadV1(&modelToRender->vertices[face.i2]);
-        gte_loadV2(&modelToRender->vertices[face.i3]);
+        gte_loadV0(&modelToRender->vertices[face->i1]);
+        gte_loadV1(&modelToRender->vertices[face->i2]);
+        gte_loadV2(&modelToRender->vertices[face->i3]);
         gte_command(GTE_CMD_RTPT | GTE_SF);
 
         uint32_t xy0 = 0;
-        if (face.type == QUAD) {
+        if (face->type == QUAD) {
             gte_command(GTE_CMD_NCLIP);
 
             if (gte_getDataReg(GTE_MAC0) <= 0)
                 continue;
 
             xy0 = gte_getDataReg(GTE_SXY0);
-            gte_loadV0(&modelToRender->vertices[face.i4]);
+            gte_loadV0(&modelToRender->vertices[face->i4]);
             gte_command(GTE_CMD_RTPS | GTE_SF);
             gte_command(GTE_CMD_AVSZ4 | GTE_SF);
         } else {
@@ -85,16 +85,16 @@ void buildRenderPackets(DMAChain *chain, const ObjModel *modelToRender, const ui
         if ((zIndex < 0) || (zIndex >= ORDERING_TABLE_SIZE))
             continue;
 
-        if (face.type == QUAD) {
+        if (face->type == QUAD) {
             ptr = allocatePacket(chain, zIndex, 5);
-            ptr[0] = color | gp0_shadedQuad(false, false, false);
+            ptr[0] = face->color | gp0_shadedQuad(false, false, false);
             ptr[1] = xy0;
             gte_storeDataReg(GTE_SXY0, 2 * 4, ptr);
             gte_storeDataReg(GTE_SXY1, 3 * 4, ptr);
             gte_storeDataReg(GTE_SXY2, 4 * 4, ptr);
         } else {
             ptr = allocatePacket(chain, zIndex, 4);
-            ptr[0] = color | gp0_shadedTriangle(false, false, false);
+            ptr[0] = face->color | gp0_shadedTriangle(false, false, false);
             gte_storeDataReg(GTE_SXY0, 1 * 4, ptr);
             gte_storeDataReg(GTE_SXY1, 2 * 4, ptr);
             gte_storeDataReg(GTE_SXY2, 3 * 4, ptr);

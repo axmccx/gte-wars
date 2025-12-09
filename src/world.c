@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "world.h"
+#include "render.h"
 #include "stdlib.h"
 #include "ps1/trig.h"
 #include "rng.h"
@@ -41,10 +42,13 @@ void worldInit(World *world) {
     loadObjModel(world->models.enemy, octahedronObj);
 
     world->models.smallParticle = malloc(sizeof *world->models.smallParticle);
-    generateParticle(world->models.smallParticle, SMALL_PARTICLE);
+    generateParticle(world->models.smallParticle, SMALL_PARTICLE, COLOR_RED);
+
+    world->models.mediumParticle = malloc(sizeof *world->models.mediumParticle);
+    generateParticle(world->models.mediumParticle, MEDIUM_PARTICLE, COLOR_GREEN);
 
     world->models.largeParticle = malloc(sizeof *world->models.largeParticle);
-    generateParticle(world->models.largeParticle, LARGE_PARTICLE);
+    generateParticle(world->models.largeParticle, LARGE_PARTICLE, COLOR_CYAN);
 }
 
 static const int dpad_to_angle[3][3] = {
@@ -115,9 +119,9 @@ void detectPlayerEnemyCollisions(World *world) {
             enemy->alive = 0;
             player->alive = 0;
             world->respawnTimer = 50;
-            spawnParticles(world, LARGE_PARTICLE, 60, 16, enemy->x, enemy->y);
-            spawnParticles(world, LARGE_PARTICLE, 30, 32, enemy->x, enemy->y);
-            spawnParticles(world, LARGE_PARTICLE, 20, 64, enemy->x, enemy->y);
+            spawnParticles(world, MEDIUM_PARTICLE, 60, 50, 16, enemy->x, enemy->y);
+            spawnParticles(world, LARGE_PARTICLE, 30, 50, 32, enemy->x, enemy->y);
+            spawnParticles(world, LARGE_PARTICLE, 20, 50, 64, enemy->x, enemy->y);
             break;
         }
     }
@@ -219,12 +223,13 @@ void spawnEnemies(World *world) {
 static ObjModel* getParticleModel(const Models* m, ParticleType k) {
     switch (k) {
         case SMALL_PARTICLE: return m->smallParticle;
+        case MEDIUM_PARTICLE: return m->mediumParticle;
         case LARGE_PARTICLE:  return m->largeParticle;
     }
     return m->smallParticle;
 }
 
-void spawnParticles(World *world, ParticleType type, int count, int speedSeed, int spawnX, int spawnY) {
+void spawnParticles(World *world, ParticleType type, int count, int lifetime, int speedSeed, int spawnX, int spawnY) {
     for (int i = 0; i < count; i++) {
         int vx = rand_range(-128, 128);
         int vy = rand_range(-128, 128);
@@ -240,7 +245,7 @@ void spawnParticles(World *world, ParticleType type, int count, int speedSeed, i
             .rdx = rand_range(32, 128),
             .vx = (vx * speed) >> 12,
             .vy = (vy * speed) >> 12,
-            .lifetime = 25,
+            .lifetime = lifetime,
             .model = getParticleModel(&world->models, type),
         };
 
@@ -281,8 +286,8 @@ void detectBulletEnemyCollisions(World *world) {
                 enemy->alive = 0;
                 bullet->alive = 0;
                 world->score += 25;
-                spawnParticles(world, SMALL_PARTICLE, 20, 16, enemy->x, enemy->y);
-                spawnParticles(world, SMALL_PARTICLE, 10, 32, enemy->x, enemy->y);
+                spawnParticles(world, SMALL_PARTICLE, 20, 25, 16, enemy->x, enemy->y);
+                spawnParticles(world, SMALL_PARTICLE, 10, 25, 32, enemy->x, enemy->y);
                 break;
             }
         }

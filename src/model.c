@@ -12,6 +12,12 @@ static uint16_t read_u16(const uint8_t *p) {
     return (uint16_t)(p[0] | (p[1] << 8));
 }
 
+static uint32_t read_u32(const uint8_t *p) {
+    return  (uint32_t)p[0]
+          | ((uint32_t)p[1] << 8)
+          | ((uint32_t)p[2] << 16)
+          | ((uint32_t)p[3] << 24);
+}
 
 void loadObjModel(ObjModel *obj_model, const uint8_t *data) {
     const uint8_t *ptr = data;
@@ -53,6 +59,9 @@ void loadObjModel(ObjModel *obj_model, const uint8_t *data) {
         ptr++;
         assert(face->type == TRI || face->type == QUAD);
 
+        face->color = read_u32(ptr);
+        ptr += 4;
+
         face->i1 = read_u16(ptr);
         ptr += 2;
 
@@ -71,7 +80,7 @@ void loadObjModel(ObjModel *obj_model, const uint8_t *data) {
     }
 }
 
-void generateParticle(ObjModel *obj_model, const ParticleType type) {
+void generateParticle(ObjModel *obj_model, const ParticleType type, const uint32_t color) {
     obj_model->vertexCount = 3;
     obj_model->facesCount = 1;
     obj_model->vertices = malloc(3 * sizeof(GTEVector16));
@@ -93,6 +102,7 @@ void generateParticle(ObjModel *obj_model, const ParticleType type) {
     obj_model->faces = malloc(sizeof(Face));
     Face *face = obj_model->faces;
     face->type = TRI;
+    face->color = color;
     face->i1 = 0;
     face->i2 = 1;
     face->i3 = 2;

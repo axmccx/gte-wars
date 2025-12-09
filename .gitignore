@@ -18,6 +18,5 @@ cmake-build-debug/*
 CMakeUserPresets.json
 
 *.dat
-*.mtl
 
 comport.txt

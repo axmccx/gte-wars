@@ -99,7 +99,7 @@ int main(int argc, const char **argv) {
 				  0,   0, ONE
 			);
 			rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
-			buildRenderPackets(chain, world.models.player, COLOR_CYAN);
+			buildRenderPackets(chain, world.models.player);
 			world.polycount += world.models.player->facesCount;
 		} else if (world.lives == 0 && !world.player.alive) {
 			printString(chain, &font, (SCREEN_WIDTH/2)-26, SCREEN_HEIGHT/2, "GAME OVER");
@@ -109,9 +109,11 @@ int main(int argc, const char **argv) {
 			if (x_button) {
 				worldInit(&world);
 			}
-			if (world.frameCount % 50 == 0) {
-				spawnParticles(&world, SMALL_PARTICLE, 40, 16, world.camera.x, world.camera.y);
-				spawnParticles(&world, SMALL_PARTICLE, 20, 32, world.camera.x, world.camera.y);
+			if (world.frameCount % 150 == 0) {
+				const int off_x = rand_range(-PLAYFIELD_HALF_WIDTH, PLAYFIELD_HALF_WIDTH);
+				const int off_y = rand_range(-PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_HEIGHT);
+				spawnParticles(&world, MEDIUM_PARTICLE, 100, 150, 16, world.camera.x-off_x, world.camera.y-off_y);
+				spawnParticles(&world, LARGE_PARTICLE, 200, 150, 32, world.camera.x-off_x, world.camera.y-off_y);
 			}
 		}
 
@@ -128,26 +130,28 @@ int main(int argc, const char **argv) {
 					  0,   0, ONE
 				);
 				rotateCurrentMatrix(bullet->dir, 0, 0);
-				buildRenderPackets(chain, world.models.bullet, COLOR_YELLOW);
+				buildRenderPackets(chain, world.models.bullet);
 				world.polycount += world.models.bullet->facesCount;
 			}
 		}
 
-		for (int i = 0; i < MAX_ENEMIES; i++) {
-			const Enemy *enemy = &world.enemies[i];
+		if (!(world.lives == 0 && !world.player.alive)) {
+			for (int i = 0; i < MAX_ENEMIES; i++) {
+				const Enemy *enemy = &world.enemies[i];
 
-			if (enemy->alive) {
-				gte_setControlReg(GTE_TRX, enemy->x - world.camera.x);
-				gte_setControlReg(GTE_TRY, enemy->y - world.camera.y);
-				gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
-				gte_setRotationMatrix(
-					ONE,   0,   0,
-					  0, ONE,   0,
-					  0,   0, ONE
-				);
-				rotateCurrentMatrix(0, enemy->rot, 0);
-				buildRenderPackets(chain, enemy->model, COLOR_MAGENTA);
-				world.polycount += enemy->model->facesCount;
+				if (enemy->alive) {
+					gte_setControlReg(GTE_TRX, enemy->x - world.camera.x);
+					gte_setControlReg(GTE_TRY, enemy->y - world.camera.y);
+					gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
+					gte_setRotationMatrix(
+						ONE,   0,   0,
+						  0, ONE,   0,
+						  0,   0, ONE
+					);
+					rotateCurrentMatrix(0, enemy->rot, 0);
+					buildRenderPackets(chain, enemy->model);
+					world.polycount += enemy->model->facesCount;
+				}
 			}
 		}
 
@@ -164,7 +168,7 @@ int main(int argc, const char **argv) {
 					  0,   0, ONE
 				);
 				rotateCurrentMatrix(particle->rx, particle->ry, particle->rz);
-				buildRenderPackets(chain, particle->model, COLOR_RED);
+				buildRenderPackets(chain, particle->model);
 				world.polycount += particle->model->facesCount;
 			}
 		}

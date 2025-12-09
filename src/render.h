@@ -7,6 +7,7 @@ typedef enum {
     COLOR_RED = 0x0000FF,
     COLOR_YELLOW= 0x00FFFF,
     COLOR_BLUE = 0xFF0000,
+    COLOR_GREEN = 0x00FF00,
     COLOR_MAGENTA = 0xFF00FF,
     COLOR_CYAN = 0xFFFF00,
     COLOR_WHITE = 0xFFFFFF
@@ -16,4 +17,4 @@ void initOrderingChain(DMAChain *chain, int bufferX, int bufferY);
 
 void buildPlayfieldBorder(DMAChain *chain, Camera camera);
 
-void buildRenderPackets(DMAChain *chain, const ObjModel *modelToRender, uint32_t color);
+void buildRenderPackets(DMAChain *chain, const ObjModel *modelToRender);

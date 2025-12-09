@@ -11,6 +11,7 @@ extern const uint8_t octahedronObj[];
 
 typedef struct {
     uint8_t type;
+    uint32_t color;
     uint16_t i1, i2, i3, i4;
 } Face;
 
@@ -26,6 +27,7 @@ typedef struct {
     ObjModel *bullet;
     ObjModel *enemy;
     ObjModel *smallParticle;
+    ObjModel *mediumParticle;
     ObjModel *largeParticle;
 } Models;
 
@@ -49,9 +51,10 @@ typedef struct {
 
 typedef enum {
     SMALL_PARTICLE = 50,
-    LARGE_PARTICLE = 80,
+    MEDIUM_PARTICLE = 75,
+    LARGE_PARTICLE = 100,
 } ParticleType;
 
 void loadObjModel(ObjModel *obj_model, const uint8_t *data);
 
-void generateParticle(ObjModel *obj_model, ParticleType type);
+void generateParticle(ObjModel *obj_model, ParticleType type, uint32_t color);

@@ -4,7 +4,7 @@
 
 #define MAX_ENEMIES 50
 #define MAX_BULLETS 30
-#define MAX_PARTICLES 200
+#define MAX_PARTICLES 500
 #define MAX_PLAYER_SPEED 30
 #define PLAYER_HIT_RADIUS 12
 #define BULLET_SPEED 50
@@ -86,7 +86,7 @@ void updateBullets(World *world);
 
 void spawnEnemies(World *world);
 
-void spawnParticles(World *world, ParticleType type, int count, int speedSeed, int spawnX, int spawnY);
+void spawnParticles(World *world, ParticleType type, int count, int lifetime, int speedSeed, int spawnX, int spawnY);
 
 void detectBulletEnemyCollisions(World *world);
 
