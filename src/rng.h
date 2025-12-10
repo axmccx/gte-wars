@@ -27,6 +27,25 @@ static inline uint32_t rng_next() {
 
 static inline int rand_range(const int min, const int max) {
     const uint32_t r = rng_next();
-    const int span = max - min + 1;
-    return min + (int)(r % span);
+    const uint32_t span = max - min + 1;
+
+    uint32_t scaled;
+    if ((span & (span - 1)) == 0) { // power-of-two span
+        scaled = r & (span - 1);
+    } else {
+        scaled = (uint32_t)(((uint64_t)r * span) >> 32);
+    }
+
+    return (int)(min + scaled);
+}
+
+static inline int depth_jitter(const int index, const int baseDepth) {
+    const int jitter = ((index * 37) & 0x1FF) - 256;
+
+    int d = baseDepth + jitter;
+
+    if (d < 512) d = 512;
+    if (d > baseDepth + 512) d = baseDepth + 512;
+
+    return d;
 }

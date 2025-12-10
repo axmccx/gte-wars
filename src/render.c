@@ -44,7 +44,7 @@ void buildPlayfieldBorder(DMAChain *chain, const Camera camera) {
     gte_loadV0(&corners[3]);
     gte_command(GTE_CMD_RTPS | GTE_SF);
 
-    uint32_t *ptr = allocatePacket(chain, ORDERING_TABLE_SIZE - 1, 7);
+    uint32_t *ptr = allocatePacket(chain, 0, 7);
     ptr[0] = COLOR_WHITE | gp0_polyLine(false, false);
     ptr[1] = xy0;
     gte_storeDataReg(GTE_SXY0, 2 * 4, ptr);

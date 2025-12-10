@@ -161,7 +161,7 @@ int main(int argc, const char **argv) {
 			if (particle->lifetime > 0) {
 				gte_setControlReg(GTE_TRX, particle->x - world.camera.x);
 				gte_setControlReg(GTE_TRY, particle->y - world.camera.y);
-				gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
+				gte_setControlReg(GTE_TRZ, depth_jitter(i, CAMERA_DISTANCE));
 				gte_setRotationMatrix(
 					ONE,   0,   0,
 					  0, ONE,   0,
@@ -181,7 +181,7 @@ int main(int argc, const char **argv) {
 		printString(chain, &font, 4, 16, buffer);
 
 		snprintf(buffer, sizeof(buffer), "Lives: %d", world.lives);
-		printString(chain, &font, SCREEN_WIDTH-42, 4, buffer);
+		printString(chain, &font, SCREEN_WIDTH-46, 4, buffer);
 
 		// Render frame
 		waitForGP0Ready();

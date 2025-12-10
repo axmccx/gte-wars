@@ -193,8 +193,8 @@ void updateBullets(World *world) {
 void spawnEnemies(World *world) {
     if (world->frameCount % 20 != 0) return;
 
-    int vx = rand_range(-128, 128);
-    int vy = rand_range(-128, 128);
+    int vx = rand_range(-128, 127);
+    int vy = rand_range(-128, 127);
     normalize_direction(&vx, &vy);
 
     const Enemy newEnemy = {
@@ -229,20 +229,34 @@ static ObjModel* getParticleModel(const Models* m, ParticleType k) {
     return m->smallParticle;
 }
 
-void spawnParticles(World *world, ParticleType type, int count, int lifetime, int speedSeed, int spawnX, int spawnY) {
+void spawnParticles(
+    World *world,
+    const ParticleType type,
+    const int count,
+    const int lifetime,
+    const int speedSeed,
+    const int spawnX,
+    const int spawnY
+) {
     for (int i = 0; i < count; i++) {
-        int vx = rand_range(-128, 128);
-        int vy = rand_range(-128, 128);
+        int vx = rand_range(-128, 127);
+        int vy = rand_range(-128, 127);
         normalize_direction(&vx, &vy);
         int speed = rand_range(speedSeed/2, speedSeed*2);
+
+        int axis = rand_range(0, 1);
+        int r[2] = {0, 0};
+        r[axis] = rand_range(0, 127);
 
         const Particle newParticle = {
             .x = rand_range(spawnX - 10, spawnX + 10),
             .y = rand_range(spawnY - 10, spawnY + 10),
-            .rx = rand_range(0, 4095),
-            .ry = rand_range(0, 4095),
-            .rz = rand_range(0, 4095),
-            .rdx = rand_range(32, 128),
+            .rx = 0,
+            .ry = 0,
+            .rz = 0,
+            .rdx = r[0],
+            .rdy = rand_range(0, 127),
+            .rdz = r[1],
             .vx = (vx * speed) >> 12,
             .vy = (vy * speed) >> 12,
             .lifetime = lifetime,
@@ -317,8 +331,8 @@ void updateParticles(World *world) {
         particle->x += particle->vx;
         particle->y += particle->vy;
         particle->rx += particle->rdx;
-        particle->ry += particle->rdx;
-        particle->rz += particle->rdx;
+        particle->ry += particle->rdy;
+        particle->rz += particle->rdz;
         particle->lifetime--;
     }
 }

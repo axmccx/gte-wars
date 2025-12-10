@@ -129,15 +129,15 @@ ControllerResponse readController(const int port) {
 		response.left_joystick = responseBuf[6] | (responseBuf[7] << 8);
 	}
 
-	char buffer[256];
-	sprintf(
-		buffer,
-		"buttons: %016b - left_joystick: %016b - right_joystick: %016b",
-		response.buttons,
-		response.left_joystick,
-		response.right_joystick
-	);
-	puts(buffer);
+	// char buffer[256];
+	// sprintf(
+	// 	buffer,
+	// 	"buttons: %016b - left_joystick: %016b - right_joystick: %016b",
+	// 	response.buttons,
+	// 	response.left_joystick,
+	// 	response.right_joystick
+	// );
+	// puts(buffer);
 
 	return response;
 }
