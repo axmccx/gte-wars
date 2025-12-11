@@ -49,7 +49,7 @@ int main(int argc, const char **argv) {
 	DMAChain dmaChains[2];
 	bool usingSecondFrame = false;
 	World world;
-	worldInit(&world);
+	worldInit(&world, GAMESTATE_INTRO);
 
 	for (;;) {
 		// Get controller buttons
@@ -59,19 +59,38 @@ int main(int argc, const char **argv) {
 		world.frameCount++;
 		rng_mix(&controller_response, world.frameCount);
 
-		updatePlayer(&world, controller_response);
-		world.camera.x = (world.player.x * CAMERA_PAN_FACTOR) >> 12;
-		world.camera.y = (world.player.y * CAMERA_PAN_FACTOR) >> 12;
-
-		if (world.player.alive) {
-			detectPlayerEnemyCollisions(&world);
-			spawnBullets(&world, controller_response);
+		if (world.state == GAMESTATE_INTRO || world.state == GAMESTATE_GAMEOVER) {
+			if (world.frameCount % 150 == 0) {
+				const int off_x = rand_range(-PLAYFIELD_HALF_WIDTH, PLAYFIELD_HALF_WIDTH);
+				const int off_y = rand_range(-PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_HEIGHT);
+				spawnParticles(&world, MEDIUM_PARTICLE, 100, 150, 16, world.camera.x-off_x, world.camera.y-off_y);
+				spawnParticles(&world, LARGE_PARTICLE, 200, 150, 32, world.camera.x-off_x, world.camera.y-off_y);
+			}
 		}
-		updateBullets(&world);
-		spawnEnemies(&world);
-		detectBulletEnemyCollisions(&world);
-		updateEnemies(&world);
-		updateParticles(&world);
+
+		if (world.state == GAMESTATE_PLAYING) {
+			updatePlayer(&world, controller_response);
+			world.camera.x = (world.player.x * CAMERA_PAN_FACTOR) >> 12;
+			world.camera.y = (world.player.y * CAMERA_PAN_FACTOR) >> 12;
+
+			if (world.player.alive) {
+				detectPlayerEnemyCollisions(&world);
+				spawnBullets(&world, controller_response);
+			}
+			updateBullets(&world);
+			spawnEnemies(&world);
+			detectBulletEnemyCollisions(&world);
+			updateEnemies(&world);
+			if (world.lives == 0 && !world.player.alive) {
+				world.state = GAMESTATE_GAMEOVER;
+			}
+		}
+
+		if (world.state != GAMESTATE_PAUSED) {
+			updateParticles(&world);
+		}
+
+		togglePause(&world, controller_response);
 
 		// Prepare for next frame
 		const int bufferX = usingSecondFrame ? SCREEN_WIDTH : 0;
@@ -89,53 +108,48 @@ int main(int argc, const char **argv) {
 		world.polycount = 0;
 
 		// Build packet chain
-		if (world.player.alive) {
-			gte_setControlReg(GTE_TRX, world.player.x - world.camera.x);
-			gte_setControlReg(GTE_TRY, world.player.y - world.camera.y);
-			gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
-			gte_setRotationMatrix(
-				ONE,   0,   0,
-				  0, ONE,   0,
-				  0,   0, ONE
-			);
-			rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
-			buildRenderPackets(chain, world.models.player);
-			world.polycount += world.models.player->facesCount;
-		} else if (world.lives == 0 && !world.player.alive) {
-			printString(chain, &font, (SCREEN_WIDTH/2)-26, SCREEN_HEIGHT/2, "GAME OVER");
-			printString(chain, &font, (SCREEN_WIDTH/2)-50, (SCREEN_HEIGHT/2) + 16, "Press X to restart");
+		if (world.state == GAMESTATE_INTRO) {
+			printString(chain, &font, (SCREEN_WIDTH/2)-22, SCREEN_HEIGHT/2, "GTE WARS");
+			printString(chain, &font, (SCREEN_WIDTH/2)-62, (SCREEN_HEIGHT/2) + 16, "Press any button to play");
 
-			const bool x_button = (controller_response.buttons & BUTTON_CROSS) != 0;
-			if (x_button) {
-				worldInit(&world);
-			}
-			if (world.frameCount % 150 == 0) {
-				const int off_x = rand_range(-PLAYFIELD_HALF_WIDTH, PLAYFIELD_HALF_WIDTH);
-				const int off_y = rand_range(-PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_HEIGHT);
-				spawnParticles(&world, MEDIUM_PARTICLE, 100, 150, 16, world.camera.x-off_x, world.camera.y-off_y);
-				spawnParticles(&world, LARGE_PARTICLE, 200, 150, 32, world.camera.x-off_x, world.camera.y-off_y);
+			if (controller_response.buttons) {
+				world.state = GAMESTATE_PLAYING;
 			}
 		}
 
-		for (int i = 0; i < MAX_BULLETS; i++) {
-			const Bullet *bullet = &world.bullets[i];
-
-			if (bullet->alive) {
-				gte_setControlReg(GTE_TRX, bullet->x - world.camera.x);
-				gte_setControlReg(GTE_TRY, bullet->y - world.camera.y);
+		if (world.state == GAMESTATE_PLAYING || world.state == GAMESTATE_PAUSED) {
+			if (world.player.alive) {
+				gte_setControlReg(GTE_TRX, world.player.x - world.camera.x);
+				gte_setControlReg(GTE_TRY, world.player.y - world.camera.y);
 				gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
 				gte_setRotationMatrix(
 					ONE,   0,   0,
 					  0, ONE,   0,
 					  0,   0, ONE
 				);
-				rotateCurrentMatrix(bullet->dir, 0, 0);
-				buildRenderPackets(chain, world.models.bullet);
-				world.polycount += world.models.bullet->facesCount;
+				rotateCurrentMatrix(world.player.dir, world.player.rot, 0);
+				buildRenderPackets(chain, world.models.player);
+				world.polycount += world.models.player->facesCount;
 			}
-		}
 
-		if (!(world.lives == 0 && !world.player.alive)) {
+			for (int i = 0; i < MAX_BULLETS; i++) {
+				const Bullet *bullet = &world.bullets[i];
+
+				if (bullet->alive) {
+					gte_setControlReg(GTE_TRX, bullet->x - world.camera.x);
+					gte_setControlReg(GTE_TRY, bullet->y - world.camera.y);
+					gte_setControlReg(GTE_TRZ, CAMERA_DISTANCE);
+					gte_setRotationMatrix(
+						ONE,   0,   0,
+						  0, ONE,   0,
+						  0,   0, ONE
+					);
+					rotateCurrentMatrix(bullet->dir, 0, 0);
+					buildRenderPackets(chain, world.models.bullet);
+					world.polycount += world.models.bullet->facesCount;
+				}
+			}
+
 			for (int i = 0; i < MAX_ENEMIES; i++) {
 				const Enemy *enemy = &world.enemies[i];
 
@@ -170,6 +184,16 @@ int main(int argc, const char **argv) {
 				rotateCurrentMatrix(particle->rx, particle->ry, particle->rz);
 				buildRenderPackets(chain, particle->model);
 				world.polycount += particle->model->facesCount;
+			}
+		}
+
+		if (world.state == GAMESTATE_GAMEOVER) {
+			printString(chain, &font, (SCREEN_WIDTH/2)-26, SCREEN_HEIGHT/2, "GAME OVER");
+			printString(chain, &font, (SCREEN_WIDTH/2)-50, (SCREEN_HEIGHT/2) + 16, "Press X to restart");
+
+			const bool x_button = (controller_response.buttons & BUTTON_CROSS) != 0;
+			if (x_button) {
+				worldInit(&world, GAMESTATE_PLAYING);
 			}
 		}
 

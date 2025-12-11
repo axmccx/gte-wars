@@ -5,13 +5,17 @@
 #include "ps1/trig.h"
 #include "rng.h"
 
-void worldInit(World *world) {
+void worldInit(World *world, const GameState state) {
+    world->state = state;
     world->frameCount = 0;
     world->nextFreeBullet = 0;
     world->nextFreeEnemy = 0;
+    world->nextFreeParticle = 0;
     world->score = 0;
     world->lives = 3;
+    world->respawnTimer = 0;
     world->polycount = 0;
+    world->lastButtons = 0;
     world->camera.x = 0;
     world->camera.y = 0;
     world->player.x = 0;
@@ -335,4 +339,21 @@ void updateParticles(World *world) {
         particle->rz += particle->rdz;
         particle->lifetime--;
     }
+}
+
+void togglePause(World *world, const ControllerResponse controller_response) {
+    const uint16_t buttons = controller_response.buttons;
+    const uint16_t last = world->lastButtons;
+
+    const bool startDown = (buttons & BUTTON_START) != 0;
+    const bool startWasDown = (last & BUTTON_START) != 0;
+
+    if (startDown && !startWasDown) {
+        if (world->state == GAMESTATE_PLAYING)
+            world->state = GAMESTATE_PAUSED;
+        else if (world->state == GAMESTATE_PAUSED)
+            world->state = GAMESTATE_PLAYING;
+    }
+
+    world->lastButtons = buttons;
 }

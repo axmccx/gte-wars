@@ -20,7 +20,15 @@ typedef struct {
     int x, y;
 } Camera;
 
+typedef enum {
+    GAMESTATE_INTRO = 0,
+    GAMESTATE_PLAYING = 1,
+    GAMESTATE_PAUSED = 2,
+    GAMESTATE_GAMEOVER = 3
+} GameState;
+
 typedef struct {
+    GameState state;
     int frameCount;
     int nextFreeBullet;
     int nextFreeEnemy;
@@ -29,6 +37,7 @@ typedef struct {
     int lives;
     int respawnTimer;
     int polycount;
+    uint16_t lastButtons;
     Camera camera;
     Models models;
     Player player;
@@ -74,7 +83,7 @@ static inline void bounce_axis(int *pos, int *vel, const int limit) {
     if (limit_axis(pos, limit)) *vel = -*vel;
 }
 
-void worldInit(World *world);
+void worldInit(World *world, GameState state);
 
 void updatePlayer(World *world, ControllerResponse controller_response);
 
@@ -93,3 +102,5 @@ void detectBulletEnemyCollisions(World *world);
 void updateEnemies(World *world);
 
 void updateParticles(World *world);
+
+void togglePause(World *world, ControllerResponse controller_response);
