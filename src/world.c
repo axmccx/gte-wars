@@ -285,10 +285,15 @@ void updateEnemies(World *world) {
 
         if (!enemy->alive) continue;
 
-        enemy->x += (enemy->vx * ENEMY_SPEED) >> 12;
-        enemy->y += (enemy->vy * ENEMY_SPEED) >> 12;
-        bounce_axis(&enemy->x, &enemy->vx, PLAYFIELD_HALF_WIDTH  - 64);
-        bounce_axis(&enemy->y, &enemy->vy, PLAYFIELD_HALF_HEIGHT - 64);
+        if (enemy->cooldown > 0) {
+            enemy->cooldown--;
+        } else {
+            enemy->x += (enemy->vx * ENEMY_SPEED) >> 12;
+            enemy->y += (enemy->vy * ENEMY_SPEED) >> 12;
+            bounce_axis(&enemy->x, &enemy->vx, PLAYFIELD_HALF_WIDTH  - 64);
+            bounce_axis(&enemy->y, &enemy->vy, PLAYFIELD_HALF_HEIGHT - 64);
+        }
+
         enemy->rot += 32;
     }
 }

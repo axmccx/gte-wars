@@ -7,4 +7,4 @@ void spawnStateTick(World *world);
 
 void runWave(World *world);
 
-void spawnEnemy(World *world, int x, int y);
+void spawnEnemy(World *world, int x, int y, int cooldown);

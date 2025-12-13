@@ -2,7 +2,7 @@
 #include "controller.h"
 #include "model.h"
 
-#define MAX_ENEMIES 50
+#define MAX_ENEMIES 60
 #define MAX_BULLETS 30
 #define MAX_PARTICLES 300
 #define MAX_PLAYER_SPEED 30

@@ -40,7 +40,7 @@ typedef struct {
 } Bullet;
 
 typedef struct {
-    int x, y, rot, vx, vy, alive;
+    int x, y, rot, vx, vy, alive, cooldown;
     ObjModel *model;
 } Enemy;
 
