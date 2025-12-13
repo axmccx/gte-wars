@@ -4,6 +4,8 @@
 #include "stdlib.h"
 #include "ps1/trig.h"
 #include "rng.h"
+#include "math.h"
+#include "spawn.h"
 
 void worldInit(World *world, const GameState state) {
     world->state = state;
@@ -15,6 +17,8 @@ void worldInit(World *world, const GameState state) {
     world->lives = 3;
     world->respawnTimer = 0;
     world->polycount = 0;
+    world->baseSpawnRate = 80;
+    world->nextWaveTimer = BASE_WAVE_TIMER;
     world->lastButtons = 0;
     world->camera.x = 0;
     world->camera.y = 0;
@@ -116,22 +120,19 @@ void detectPlayerEnemyCollisions(World *world) {
         Enemy *enemy = &world->enemies[e];
         if (!enemy->alive) continue;
 
-        const int dx = enemy->x - player->x;
-        const int dz = enemy->y - player->y;
-
-        if (dx*dx + dz*dz < r*r) {
+        if (isWithinRange(enemy->x, enemy->y, player->x, player->y, r)) {
             enemy->alive = 0;
             player->alive = 0;
             world->respawnTimer = 50;
-            spawnParticles(world, MEDIUM_PARTICLE, 60, 50, 16, enemy->x, enemy->y);
-            spawnParticles(world, LARGE_PARTICLE, 30, 50, 32, enemy->x, enemy->y);
-            spawnParticles(world, LARGE_PARTICLE, 20, 50, 64, enemy->x, enemy->y);
+            emitParticles(world, MEDIUM_PARTICLE, 60, 50, 16, enemy->x, enemy->y);
+            emitParticles(world, LARGE_PARTICLE, 30, 50, 32, enemy->x, enemy->y);
+            emitParticles(world, LARGE_PARTICLE, 20, 50, 64, enemy->x, enemy->y);
             break;
         }
     }
 }
 
-void spawnBullets(World *world, const ControllerResponse controller_response) {
+void fireBullets(World *world, const ControllerResponse controller_response) {
     const uint8_t stick_x_raw = controller_response.right_joystick & 0xFF;
     const uint8_t stick_y_raw = (controller_response.right_joystick >> 8) & 0xFF;
 
@@ -194,36 +195,6 @@ void updateBullets(World *world) {
     }
 }
 
-void spawnEnemies(World *world) {
-    if (world->frameCount % 20 != 0) return;
-
-    int vx = rand_range(-128, 127);
-    int vy = rand_range(-128, 127);
-    normalize_direction(&vx, &vy);
-
-    const Enemy newEnemy = {
-        .x = rand_range(-(PLAYFIELD_HALF_WIDTH - 500), PLAYFIELD_HALF_WIDTH - 500),
-        .y = rand_range(-(PLAYFIELD_HALF_HEIGHT - 500), PLAYFIELD_HALF_HEIGHT - 500),
-        .rot = 0,
-        .vx = vx,
-        .vy = vy,
-        .alive = 1,
-        .model = world->models.enemy,
-    };
-
-    const int start = world->nextFreeEnemy;
-
-    for (int i = 0; i < MAX_ENEMIES; i++) {
-        const int idx = (start + i) % MAX_ENEMIES;
-
-        if (!world->enemies[idx].alive) {
-            world->nextFreeEnemy = (idx + 1) % MAX_ENEMIES;
-            world->enemies[idx] = newEnemy;
-            return;
-        }
-    }
-}
-
 static ObjModel* getParticleModel(const Models* m, ParticleType k) {
     switch (k) {
         case SMALL_PARTICLE: return m->smallParticle;
@@ -233,7 +204,7 @@ static ObjModel* getParticleModel(const Models* m, ParticleType k) {
     return m->smallParticle;
 }
 
-void spawnParticles(
+void emitParticles(
     World *world,
     const ParticleType type,
     const int count,
@@ -296,16 +267,12 @@ void detectBulletEnemyCollisions(World *world) {
             Enemy *enemy = &world->enemies[e];
             if (!enemy->alive) continue;
 
-            const int dx = enemy->x -tipX;
-            const int dz = enemy->y -tipY;
-
-            const int r = ENEMY_HIT_RADIUS;
-            if (dx*dx + dz*dz < r*r) {
+            if (isWithinRange(enemy->x, enemy->y, tipX, tipY, ENEMY_HIT_RADIUS)) {
                 enemy->alive = 0;
                 bullet->alive = 0;
                 world->score += 25;
-                spawnParticles(world, SMALL_PARTICLE, 20, 25, 16, enemy->x, enemy->y);
-                spawnParticles(world, SMALL_PARTICLE, 10, 25, 32, enemy->x, enemy->y);
+                emitParticles(world, SMALL_PARTICLE, 20, 25, 16, enemy->x, enemy->y);
+                emitParticles(world, SMALL_PARTICLE, 10, 25, 32, enemy->x, enemy->y);
                 break;
             }
         }

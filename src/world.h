@@ -37,6 +37,8 @@ typedef struct {
     int lives;
     int respawnTimer;
     int polycount;
+    int baseSpawnRate;
+    int nextWaveTimer;
     uint16_t lastButtons;
     Camera camera;
     Models models;
@@ -89,13 +91,11 @@ void updatePlayer(World *world, ControllerResponse controller_response);
 
 void detectPlayerEnemyCollisions(World *world);
 
-void spawnBullets(World *world, ControllerResponse controller_response);
+void fireBullets(World *world, ControllerResponse controller_response);
 
 void updateBullets(World *world);
 
-void spawnEnemies(World *world);
-
-void spawnParticles(World *world, ParticleType type, int count, int lifetime, int speedSeed, int spawnX, int spawnY);
+void emitParticles(World *world, ParticleType type, int count, int lifetime, int speedSeed, int spawnX, int spawnY);
 
 void detectBulletEnemyCollisions(World *world);
 

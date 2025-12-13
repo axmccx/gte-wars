@@ -9,6 +9,7 @@
 #include "render.h"
 #include "rng.h"
 #include "font.h"
+#include "spawn.h"
 
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
@@ -63,8 +64,8 @@ int main(int argc, const char **argv) {
 			if (world.frameCount % 150 == 0) {
 				const int off_x = rand_range(-PLAYFIELD_HALF_WIDTH, PLAYFIELD_HALF_WIDTH);
 				const int off_y = rand_range(-PLAYFIELD_HALF_HEIGHT, PLAYFIELD_HALF_HEIGHT);
-				spawnParticles(&world, MEDIUM_PARTICLE, 100, 150, 16, world.camera.x-off_x, world.camera.y-off_y);
-				spawnParticles(&world, LARGE_PARTICLE, 200, 150, 32, world.camera.x-off_x, world.camera.y-off_y);
+				emitParticles(&world, MEDIUM_PARTICLE, 100, 150, 16, world.camera.x-off_x, world.camera.y-off_y);
+				emitParticles(&world, LARGE_PARTICLE, 200, 150, 32, world.camera.x-off_x, world.camera.y-off_y);
 			}
 		}
 
@@ -75,10 +76,10 @@ int main(int argc, const char **argv) {
 
 			if (world.player.alive) {
 				detectPlayerEnemyCollisions(&world);
-				spawnBullets(&world, controller_response);
+				fireBullets(&world, controller_response);
 			}
 			updateBullets(&world);
-			spawnEnemies(&world);
+			spawnStateTick(&world);
 			detectBulletEnemyCollisions(&world);
 			updateEnemies(&world);
 			if (world.lives == 0 && !world.player.alive) {
@@ -166,6 +167,10 @@ int main(int argc, const char **argv) {
 					buildRenderPackets(chain, enemy->model);
 					world.polycount += enemy->model->facesCount;
 				}
+			}
+
+			if (world.nextWaveTimer < 200) {
+				printString(chain, &font, (SCREEN_WIDTH/2)-48, 4 , "Next wave incoming!!");
 			}
 		}
 
