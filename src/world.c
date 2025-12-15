@@ -46,8 +46,8 @@ void worldInit(World *world, const GameState state) {
     world->models.bullet = malloc(sizeof *world->models.bullet);
     loadObjModel(world->models.bullet, bulletObj);
 
-    world->models.enemy = malloc(sizeof *world->models.enemy);
-    loadObjModel(world->models.enemy, octahedronObj);
+    world->models.enemyWanderer = malloc(sizeof *world->models.enemyWanderer);
+    loadObjModel(world->models.enemyWanderer, octahedronObj);
 
     world->models.smallParticle = malloc(sizeof *world->models.smallParticle);
     generateParticle(world->models.smallParticle, SMALL_PARTICLE, COLOR_RED);
@@ -276,25 +276,6 @@ void detectBulletEnemyCollisions(World *world) {
                 break;
             }
         }
-    }
-}
-
-void updateEnemies(World *world) {
-    for (int i = 0; i < MAX_ENEMIES; i++) {
-        Enemy *enemy = &world->enemies[i];
-
-        if (!enemy->alive) continue;
-
-        if (enemy->cooldown > 0) {
-            enemy->cooldown--;
-        } else {
-            enemy->x += (enemy->vx * ENEMY_SPEED) >> 12;
-            enemy->y += (enemy->vy * ENEMY_SPEED) >> 12;
-            bounce_axis(&enemy->x, &enemy->vx, PLAYFIELD_HALF_WIDTH  - 64);
-            bounce_axis(&enemy->y, &enemy->vy, PLAYFIELD_HALF_HEIGHT - 64);
-        }
-
-        enemy->rot += 32;
     }
 }
 

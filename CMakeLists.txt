@@ -31,6 +31,7 @@ add_library(
     src/rng.c
     src/font.c
     src/spawn.c
+    src/enemy.c
 )
 target_compile_definitions(common PRIVATE PRINTF_DISABLE_SUPPORT_LONG_LONG)
 

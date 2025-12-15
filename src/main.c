@@ -10,6 +10,7 @@
 #include "rng.h"
 #include "font.h"
 #include "spawn.h"
+#include "enemy.h"
 
 int main(int argc, const char **argv) {
 	initSerialIO(115200);
@@ -51,6 +52,7 @@ int main(int argc, const char **argv) {
 	bool usingSecondFrame = false;
 	World world;
 	worldInit(&world, GAMESTATE_INTRO);
+	initEnemyDefinitions(&world);
 
 	for (;;) {
 		// Get controller buttons
@@ -164,8 +166,8 @@ int main(int argc, const char **argv) {
 						  0,   0, ONE
 					);
 					rotateCurrentMatrix(0, enemy->rot, 0);
-					buildRenderPackets(chain, enemy->model);
-					world.polycount += enemy->model->facesCount;
+					buildRenderPackets(chain, enemy->def->model);
+					world.polycount += enemy->def->model->facesCount;
 				}
 			}
 

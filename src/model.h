@@ -25,7 +25,7 @@ typedef struct {
 typedef struct {
     ObjModel *player;
     ObjModel *bullet;
-    ObjModel *enemy;
+    ObjModel *enemyWanderer;
     ObjModel *smallParticle;
     ObjModel *mediumParticle;
     ObjModel *largeParticle;
@@ -38,11 +38,6 @@ typedef struct {
 typedef struct {
     int x, y, vx, vy, dir, alive;
 } Bullet;
-
-typedef struct {
-    int x, y, rot, vx, vy, alive, cooldown;
-    ObjModel *model;
-} Enemy;
 
 typedef struct {
     int x, y, rx, ry, rz, rdx, rdy, rdz, vx, vy, lifetime;

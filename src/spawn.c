@@ -15,7 +15,7 @@ void spawnStateTick(World *world) {
             y = rand_range(-(PLAYFIELD_HALF_HEIGHT - 100), PLAYFIELD_HALF_HEIGHT - 100);
         } while (isWithinRange(x, y, world->player.x, world->player.y, 800));
 
-        spawnEnemy(world, x, y, 0);
+        spawnEnemy(world, ENEMY_WANDERER, x, y, 0);
     }
 }
 
@@ -40,12 +40,18 @@ void runWave(World *world) {
         const int x = xSign * (PLAYFIELD_HALF_WIDTH - rx);
         const int y = ySign * (PLAYFIELD_HALF_HEIGHT - ry);
 
-        spawnEnemy(world, x, y, 50);
+        spawnEnemy(world, ENEMY_WANDERER, x, y, 50);
         spawnCount--;
     }
 }
 
-void spawnEnemy(World *world, const int x, const int y, const int cooldown) {
+void spawnEnemy(
+    World *world,
+    const EnemyType type,
+    const int x,
+    const int y,
+    const int cooldown
+) {
     int vx = rand_range(-128, 127);
     int vy = rand_range(-128, 127);
     normalize_direction(&vx, &vy);
@@ -58,7 +64,7 @@ void spawnEnemy(World *world, const int x, const int y, const int cooldown) {
         .vy = vy,
         .alive = 1,
         .cooldown = cooldown,
-        .model = world->models.enemy,
+        .def = &enemyDefs[type],
     };
 
     const int start = world->nextFreeEnemy;

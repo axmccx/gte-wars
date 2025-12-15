@@ -1,6 +1,7 @@
 #pragma once
 #include "controller.h"
 #include "model.h"
+#include "enemy.h"
 
 #define MAX_ENEMIES 60
 #define MAX_BULLETS 30
@@ -27,7 +28,7 @@ typedef enum {
     GAMESTATE_GAMEOVER = 3
 } GameState;
 
-typedef struct {
+typedef struct World {
     GameState state;
     int frameCount;
     int nextFreeBullet;
@@ -65,7 +66,7 @@ static inline void normalize_direction(int *vx, int *vy) {
     *vy = (y << 12) / mag;
 }
 
-static inline int limit_axis(int *pos, int limit) {
+static inline int limit_axis(int *pos, const int limit) {
     if (*pos > limit) {
         *pos = limit;
         return 1;
@@ -98,8 +99,6 @@ void updateBullets(World *world);
 void emitParticles(World *world, ParticleType type, int count, int lifetime, int speedSeed, int spawnX, int spawnY);
 
 void detectBulletEnemyCollisions(World *world);
-
-void updateEnemies(World *world);
 
 void updateParticles(World *world);
 
