@@ -83,11 +83,12 @@ int main(int argc, const char **argv) {
 			updateBullets(&world);
 			spawnStateTick(&world);
 			detectBulletEnemyCollisions(&world);
-			updateEnemies(&world);
 			if (world.lives == 0 && !world.player.alive) {
 				world.state = GAMESTATE_GAMEOVER;
 			}
 		}
+
+		updateEnemies(&world);
 
 		if (world.state != GAMESTATE_PAUSED) {
 			updateParticles(&world);

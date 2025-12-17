@@ -49,6 +49,9 @@ void worldInit(World *world, const GameState state) {
     world->models.enemyWanderer = malloc(sizeof *world->models.enemyWanderer);
     loadObjModel(world->models.enemyWanderer, octahedronObj);
 
+    world->models.enemyChaser = malloc(sizeof *world->models.enemyChaser);
+    loadObjModel(world->models.enemyChaser, extrudedCubeObj);
+
     world->models.smallParticle = malloc(sizeof *world->models.smallParticle);
     generateParticle(world->models.smallParticle, SMALL_PARTICLE, COLOR_RED);
 

@@ -43,6 +43,7 @@ target_include_directories(
 link_libraries(common)
 
 addPS1Executable(main src/main.c)
+
 covertObj(
         objects/ship.obj
         objects/ship.dat
@@ -58,6 +59,12 @@ covertObj(
         objects/octahedron.dat
 )
 addBinaryFile(main octahedronObj "${PROJECT_BINARY_DIR}/objects/octahedron.dat")
+covertObj(
+        objects/extrudedCube.obj
+        objects/extrudedCube.dat
+)
+addBinaryFile(main extrudedCubeObj "${PROJECT_BINARY_DIR}/objects/extrudedCube.dat")
+
 convertImage(
         textures/font.png 4
         objects/fontTexture.dat

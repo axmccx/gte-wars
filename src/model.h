@@ -8,6 +8,7 @@
 extern const uint8_t playerShipObj[];
 extern const uint8_t bulletObj[];
 extern const uint8_t octahedronObj[];
+extern const uint8_t extrudedCubeObj[];
 
 typedef struct {
     uint8_t type;
@@ -26,6 +27,7 @@ typedef struct {
     ObjModel *player;
     ObjModel *bullet;
     ObjModel *enemyWanderer;
+    ObjModel *enemyChaser;
     ObjModel *smallParticle;
     ObjModel *mediumParticle;
     ObjModel *largeParticle;
