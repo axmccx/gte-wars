@@ -11,7 +11,7 @@ void initEnemyDefinitions(World *world) {
     enemyDefs[ENEMY_WANDERER] = (EnemyDefinition){
         .type = ENEMY_WANDERER,
         .model = world->models.enemyWanderer,
-        .speed = 12,
+        .speed = 8,
         .turnRate = 384,
         .vLimit = 4096,
         .updateFn = updateWanderer,
@@ -62,7 +62,7 @@ void updateWanderer(Enemy *enemy, World *world) {
         enemy->vy += (enemy->steerY * enemy->def->turnRate) >> 12;
 
         const int mag = abs(enemy->vx) + abs(enemy->vy);
-        if (mag > enemy->def->vLimit) {
+        if (mag > 0) {
             enemy->vx = (enemy->vx * enemy->def->vLimit) / mag;
             enemy->vy = (enemy->vy * enemy->def->vLimit) / mag;
         }
