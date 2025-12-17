@@ -2,8 +2,6 @@
 #include "model.h"
 
 #define ENEMY_COUNT 2
-#define CHASER_TURN_RATE 256
-#define MAX_CHASER_SPEED  4096
 
 typedef struct Enemy Enemy;
 typedef struct World World;
@@ -20,11 +18,16 @@ typedef struct {
     EnemyType type;
     ObjModel *model;
     int speed;
+    int vLimit;
+    int turnRate;
     EnemyUpdateFn updateFn;
 } EnemyDefinition;
 
 typedef struct Enemy {
-    int x, y, rot, rot_dir, vx, vy, alive, cooldown;
+    int x, y, rot, rotDir;
+    int vx, vy;
+    int steerX, steerY;
+    int alive, cooldown;
     EnemyDefinition *def;
 } Enemy;
 
